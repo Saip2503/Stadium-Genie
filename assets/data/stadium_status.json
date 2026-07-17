@@ -1,0 +1,179 @@
+{
+  "stadium": "FIFA 2026 MetLife Stadium",
+  "city": "East Rutherford, NJ",
+  "event": "FIFA World Cup 2026 - Group Stage",
+  "match": "Brazil vs Argentina",
+  "kickoff": "2026-07-16T20:00:00-04:00",
+  "capacity": 82500,
+  "last_updated": "2026-07-16T01:30:00Z",
+  "zones": {
+    "North": {
+      "display_name": "North Zone",
+      "sections": ["101", "102", "103", "104", "105"],
+      "food_queue_mins": 15,
+      "restroom_queue_mins": 2,
+      "merch_queue_mins": 12,
+      "crowd_level": "high",
+      "crowd_percent": 87,
+      "has_elevator": true,
+      "is_wheelchair_accessible": true,
+      "is_sensory_friendly": false,
+      "food_stalls": [
+        { "name": "Pizza Palace", "queue_mins": 18, "is_open": true },
+        { "name": "Burger Hub", "queue_mins": 12, "is_open": true },
+        { "name": "Taco Corner", "queue_mins": 8, "is_open": false }
+      ],
+      "walk_times": {
+        "South": 5,
+        "East": 4,
+        "West": 4
+      }
+    },
+    "South": {
+      "display_name": "South Zone",
+      "sections": ["201", "202", "203", "204", "205"],
+      "food_queue_mins": 3,
+      "restroom_queue_mins": 10,
+      "merch_queue_mins": 4,
+      "crowd_level": "low",
+      "crowd_percent": 42,
+      "has_elevator": true,
+      "is_wheelchair_accessible": true,
+      "is_sensory_friendly": true,
+      "food_stalls": [
+        { "name": "Sushi Station", "queue_mins": 5, "is_open": true },
+        { "name": "Wrap World", "queue_mins": 3, "is_open": true },
+        { "name": "Juice Bar", "queue_mins": 2, "is_open": true }
+      ],
+      "walk_times": {
+        "North": 5,
+        "East": 4,
+        "West": 4
+      }
+    },
+    "East": {
+      "display_name": "East Zone",
+      "sections": ["301", "302", "303", "304"],
+      "food_queue_mins": 8,
+      "restroom_queue_mins": 5,
+      "merch_queue_mins": 18,
+      "crowd_level": "medium",
+      "crowd_percent": 65,
+      "has_elevator": false,
+      "is_wheelchair_accessible": false,
+      "is_sensory_friendly": false,
+      "food_stalls": [
+        { "name": "Hot Dog Stand", "queue_mins": 6, "is_open": true },
+        { "name": "Nachos Corner", "queue_mins": 10, "is_open": true }
+      ],
+      "walk_times": {
+        "North": 4,
+        "South": 4,
+        "West": 6
+      }
+    },
+    "West": {
+      "display_name": "West Zone",
+      "sections": ["401", "402", "403", "404"],
+      "food_queue_mins": 5,
+      "restroom_queue_mins": 3,
+      "merch_queue_mins": 6,
+      "crowd_level": "medium",
+      "crowd_percent": 58,
+      "has_elevator": true,
+      "is_wheelchair_accessible": true,
+      "is_sensory_friendly": true,
+      "food_stalls": [
+        { "name": "Gourmet Grill", "queue_mins": 7, "is_open": true },
+        { "name": "Smoothie Spot", "queue_mins": 4, "is_open": true },
+        { "name": "Pretzel Place", "queue_mins": 3, "is_open": true }
+      ],
+      "walk_times": {
+        "North": 4,
+        "South": 4,
+        "East": 6
+      }
+    }
+  },
+  "gates": {
+    "Gate A": {
+      "queue_mins": 25,
+      "is_open": true,
+      "is_wheelchair_accessible": true,
+      "location": "North entrance",
+      "transport_nearby": ["Bus Stop A", "Parking Lot A"]
+    },
+    "Gate B": {
+      "queue_mins": 5,
+      "is_open": true,
+      "is_wheelchair_accessible": true,
+      "location": "South entrance",
+      "transport_nearby": ["Bus Stop B", "Subway Station", "Parking Lot B"]
+    },
+    "Gate C": {
+      "queue_mins": 20,
+      "is_open": true,
+      "is_wheelchair_accessible": false,
+      "location": "East entrance",
+      "transport_nearby": ["Bus Stop C"]
+    },
+    "Gate D": {
+      "queue_mins": 2,
+      "is_open": true,
+      "is_wheelchair_accessible": true,
+      "location": "West entrance - Accessible",
+      "transport_nearby": ["Accessible Parking", "Shuttle Stop D"]
+    }
+  },
+  "transport": {
+    "subway": {
+      "line": "NJ Transit - Meadowlands Rail",
+      "next_arrivals": [5, 22, 38],
+      "crowding": "moderate"
+    },
+    "bus": {
+      "routes": ["350", "351", "352"],
+      "next_arrivals": [8, 15, 30],
+      "crowding": "high"
+    },
+    "parking": {
+      "Lot A": { "total": 500, "available": 120, "accessible_available": 15 },
+      "Lot B": { "total": 300, "available": 30, "accessible_available": 5 },
+      "Accessible Lot": { "total": 80, "available": 22, "accessible_available": 22 }
+    }
+  },
+  "alerts": [
+    {
+      "id": "alert_001",
+      "type": "crowd",
+      "zone": "North",
+      "message": "North Zone concessions are very busy. Consider South Zone for faster service.",
+      "severity": "warning"
+    },
+    {
+      "id": "alert_002",
+      "type": "gate",
+      "gate": "Gate A",
+      "message": "Gate A has a 25-minute wait. Gate B is recommended with only 5 minutes.",
+      "severity": "warning"
+    },
+    {
+      "id": "alert_003",
+      "type": "accessibility",
+      "message": "Sensory-friendly quiet rooms available in South and West zones.",
+      "severity": "info"
+    }
+  ],
+  "services": {
+    "first_aid": [
+      { "location": "Section 102, North Zone", "is_staffed": true },
+      { "location": "Section 203, South Zone", "is_staffed": true },
+      { "location": "Section 402, West Zone", "is_staffed": true }
+    ],
+    "lost_and_found": "Near Gate B, South Entrance, Level 1",
+    "guest_services": "Section 104, North Zone Concourse",
+    "prayer_room": "West Zone, Level 2, Room W-220",
+    "baby_care": "South Zone, Level 1, near Section 204",
+    "quiet_room": ["South Zone Level 2", "West Zone Level 1"]
+  }
+}

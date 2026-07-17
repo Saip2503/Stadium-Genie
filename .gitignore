@@ -1,0 +1,30 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+*.g.dart
+*.freezed.dart
+
+# Environment / Secrets
+.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Flutter Web build output
+web/index.html~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Heavy assets (keep repo under 10MB)
+assets/fonts/*.ttf
+assets/videos/
+*.mp4
+*.mov
+
+# Test coverage
+coverage/
