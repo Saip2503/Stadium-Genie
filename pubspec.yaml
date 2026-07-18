@@ -50,5 +50,7 @@ flutter:
   assets:
     - assets/data/stadium_status.json
     - assets/images/stadium.png
+    - assets/images/stadium_map.png
+    - assets/images/stadium_concourse.png
     - assets/images/app_logo.png
     - .env

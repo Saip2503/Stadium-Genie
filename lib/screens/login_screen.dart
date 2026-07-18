@@ -59,17 +59,27 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Background subtle stadium grid/dots or gradient
+          // Premium Full-Screen Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/stadium.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // High Contrast Dark Overlay for readability
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [AppColors.background, AppColors.surfaceContainer],
+                  colors: [
+                    Colors.black.withValues(alpha: 0.5),
+                    Colors.black.withValues(alpha: 0.85),
+                  ],
                 ),
               ),
             ),
@@ -87,17 +97,17 @@ class _LoginScreenState extends State<LoginScreen>
                   constraints: const BoxConstraints(maxWidth: 420),
                   padding: const EdgeInsets.all(32.0),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.white.withValues(alpha: 0.95), // Premium glass-ish effect
                     borderRadius: BorderRadius.circular(24.0),
                     border: Border.all(
-                      color: AppColors.outlineVariant.withValues(alpha: 0.3),
-                      width: 1,
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
@@ -105,48 +115,29 @@ class _LoginScreenState extends State<LoginScreen>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Brand + stadium hero image
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: Image.asset(
-                          'assets/images/stadium.png',
-                          width: double.infinity,
-                          height: 160,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                                height: 160,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      AppColors.primary,
-                                      AppColors.primaryContainer,
-                                    ],
-                                  ),
-                                ),
-                                alignment: Alignment.center,
-                                child: const Icon(
+                      // Circular Premium Logo Container
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/app_logo.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
                                   Icons.stadium,
-                                  color: Colors.white,
-                                  size: 48,
+                                  color: AppColors.primary,
+                                  size: 80,
                                 ),
-                              ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Image.asset(
-                        'assets/images/app_logo.png',
-                        width: 96,
-                        height: 96,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.stadium,
-                              color: AppColors.primary,
-                              size: 96,
-                            ),
-                      ),
-                      const SizedBox(height: 16),
 
                       // Title
                       const Text(
@@ -156,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen>
                           fontSize: 32,
                           fontWeight: FontWeight.w900,
                           color: AppColors.primary,
-                          letterSpacing: 0,
+                          letterSpacing: -0.5,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -190,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen>
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.onSurface,
-                            elevation: 0,
+                            elevation: 2,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -235,6 +226,7 @@ class _LoginScreenState extends State<LoginScreen>
 
                       // Info text
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(
                             Icons.lock_outline,
@@ -242,16 +234,14 @@ class _LoginScreenState extends State<LoginScreen>
                             color: AppColors.outline,
                           ),
                           const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              "Secure FIFA Match Day Authentication",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12,
-                                color: AppColors.outline,
-                                fontWeight: FontWeight.w500,
-                              ),
+                          Text(
+                            "Secure FIFA Match Day Authentication",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12,
+                              color: AppColors.outline,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -262,8 +252,8 @@ class _LoginScreenState extends State<LoginScreen>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',
-                          fontSize: 12,
-                          color: AppColors.onSurfaceVariant,
+                          fontSize: 11,
+                          color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
                           height: 1.35,
                         ),
                       ),

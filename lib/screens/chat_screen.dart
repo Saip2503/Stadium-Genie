@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/chat_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
@@ -21,13 +22,47 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final List<String> _suggestedPrompts = [
-    "Find the shortest restroom queue",
-    "Find food with the lowest wait",
-    "Find merch near me",
-    "Emergency and first aid info",
-    "Wheelchair accessible route to concessions",
-    "Find a sensory friendly quiet zone",
+  final List<Map<String, dynamic>> _suggestedPrompts = [
+    {
+      'icon': Icons.wc,
+      'label': 'Nearest restroom',
+      'query': 'Find the nearest restroom with shortest queue from my zone',
+    },
+    {
+      'icon': Icons.fastfood,
+      'label': 'Fastest food line',
+      'query': 'Which food stand has the shortest wait near me right now?',
+    },
+    {
+      'icon': Icons.storefront,
+      'label': 'Find merch nearby',
+      'query': 'Find a merchandise stand close to my current zone',
+    },
+    {
+      'icon': Icons.local_hospital,
+      'label': 'Emergency & First Aid',
+      'query': 'Where is the nearest emergency first aid station?',
+    },
+    {
+      'icon': Icons.accessible,
+      'label': 'Wheelchair route',
+      'query': 'Show me wheelchair accessible routes to concessions from my section',
+    },
+    {
+      'icon': Icons.volume_mute,
+      'label': 'Quiet zone',
+      'query': 'Find a sensory friendly quiet zone near me',
+    },
+    {
+      'icon': Icons.directions,
+      'label': 'Exit navigation',
+      'query': 'What is the fastest exit route to avoid the post-match crowd?',
+    },
+    {
+      'icon': Icons.translate,
+      'label': '¿Hablas español?',
+      'query': '¿Puedes ayudarme en español? ¿Dónde está la puerta de salida más cercana?',
+    },
   ];
 
   @override
@@ -65,7 +100,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final mediaQuery = MediaQuery.of(context);
     final isDesktop = mediaQuery.size.width >= 900;
 
-    // Trigger scrolling when messages change or loading begins
+    // Trigger scrolling when messages change
     _scrollToBottom();
 
     return Scaffold(
@@ -73,25 +108,50 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Icon(Icons.bolt, color: AppColors.primaryContainer),
-            const SizedBox(width: 8),
-            Text(
-              "StadiumGenie AI assistant",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.getOnSurface(isDark),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(8),
               ),
+              child: const Icon(Icons.bolt, color: Colors.white, size: 16),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'StadiumGenie AI',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.getOnSurface(isDark),
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  'FIFA 2026 Smart Assistant',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.getOnSurfaceVariant(isDark),
+                    height: 1.1,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
         backgroundColor: AppColors.getSurface(isDark),
         elevation: 0,
         actions: [
-          // Clear Conversation history option
+          // Clear conversation button
           IconButton(
-            icon: const Icon(Icons.delete_sweep_outlined),
-            tooltip: "Reset conversation history",
+            icon: Icon(
+              Icons.delete_sweep_outlined,
+              color: AppColors.getOnSurfaceVariant(isDark),
+            ),
+            tooltip: 'Reset conversation',
             onPressed: () {
               ref.read(chatProvider.notifier).clearChat();
             },
@@ -120,15 +180,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: SafeArea(
               child: Column(
                 children: [
-                  // Location and Accessibility Context indicator bar at top of chat pane
+                  // Location and Accessibility Context indicator bar
                   _buildContextIndicatorBar(settings, isDark),
+
+                  // Error message banner
                   if (chatState.error != null)
                     _buildErrorBanner(chatState.error!, isDark),
 
                   // Message list view
                   Expanded(
                     child: chatState.messages.isEmpty
-                        ? const Center(child: CircularProgressIndicator())
+                        ? _buildWelcomeState(isDark)
                         : ListView.builder(
                             controller: _scrollController,
                             padding: const EdgeInsets.symmetric(
@@ -143,11 +205,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ),
                   ),
 
-                  // Suggested prompts quick click chips list
+                  // Suggested prompts quick access chips
                   if (chatState.messages.length <= 1)
                     _buildSuggestedChips(isDark),
 
-                  // Input controls panel
+                  // Message input panel
                   _buildInputPanel(chatState.isLoading, isDark),
                 ],
               ),
@@ -166,6 +228,101 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
+  Widget _buildWelcomeState(bool isDark) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+
+          // Hero welcome icon
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.primaryContainer.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.smart_toy_outlined,
+              size: 48,
+              color: AppColors.primaryContainer,
+            ),
+          )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .scale(
+                begin: const Offset(1.0, 1.0),
+                end: const Offset(1.05, 1.05),
+                duration: 2000.ms,
+              ),
+
+          const SizedBox(height: 20),
+
+          Text(
+            'How can I help you today?',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppColors.getOnSurface(isDark),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Ask me anything about the stadium — navigation, queues, accessibility, or just chat in your language!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.getOnSurfaceVariant(isDark),
+              height: 1.5,
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // Feature highlights
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildFeatureChip(Icons.location_on, 'Context-aware', isDark),
+              _buildFeatureChip(Icons.translate, 'Multilingual', isDark),
+              _buildFeatureChip(Icons.accessible, 'Accessible', isDark),
+              _buildFeatureChip(Icons.bolt, 'Real-time data', isDark),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureChip(IconData icon, String label, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.getSurfaceContainer(isDark),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.getOutlineVariant(isDark).withValues(alpha: 0.5),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.primaryContainer),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.getOnSurface(isDark),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildContextIndicatorBar(UserSettings settings, bool isDark) {
     return Container(
       width: double.infinity,
@@ -179,36 +336,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
       ),
       child: Wrap(
-        spacing: 12,
+        spacing: 8,
         runSpacing: 6,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          // Seating location label
           _buildContextBadge(
             icon: Icons.location_on,
-            label: "Zone: ${settings.currentZone}",
+            label: 'Zone: ${settings.currentZone}',
             isDark: isDark,
           ),
-          // Wheelchair mode active label
           if (settings.wheelchairMode)
             _buildContextBadge(
               icon: Icons.accessible,
-              label: "Wheelchair routes filtering",
+              label: 'Wheelchair mode',
               color: AppColors.primaryContainer,
               isDark: isDark,
             ),
-          // Quiet zone sensory active label
           if (settings.sensoryFriendlyMode)
             _buildContextBadge(
               icon: Icons.volume_mute,
-              label: "Sensory friendly mode",
+              label: 'Sensory friendly',
               color: AppColors.secondary,
               isDark: isDark,
             ),
-          // Translation note
           _buildContextBadge(
             icon: Icons.translate,
-            label: "Auto translating",
+            label: 'Auto-translate',
             isDark: isDark,
           ),
         ],
@@ -228,6 +381,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       decoration: BoxDecoration(
         color: activeColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: activeColor.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -238,7 +394,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             label,
             style: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
               color: activeColor,
             ),
           ),
@@ -249,40 +405,77 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget _buildSuggestedChips(bool isDark) {
     return Container(
-      height: 48,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _suggestedPrompts.length,
-        itemBuilder: (context, index) {
-          final prompt = _suggestedPrompts[index];
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: AccessibilityWrapper(
-              label: "Suggested question: $prompt",
-              isButton: true,
-              child: ActionChip(
-                backgroundColor: AppColors.getSurfaceContainer(isDark),
-                label: Text(
-                  prompt,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.getOnSurface(isDark),
-                  ),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: AppColors.getOutline(isDark).withValues(alpha: 0.15),
-                  ),
-                ),
-                onPressed: () => _handleSend(prompt),
+      margin: const EdgeInsets.only(bottom: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 8),
+            child: Text(
+              'Quick questions',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.getOnSurfaceVariant(isDark),
+                letterSpacing: 0.5,
               ),
             ),
-          );
-        },
+          ),
+          SizedBox(
+            height: 44,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _suggestedPrompts.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final prompt = _suggestedPrompts[index];
+                return AccessibilityWrapper(
+                  label: 'Suggested: ${prompt["label"]}',
+                  isButton: true,
+                  child: InkWell(
+                    onTap: () => _handleSend(prompt['query'] as String),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.getSurfaceContainer(isDark),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppColors.getOutlineVariant(isDark)
+                              .withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            prompt['icon'] as IconData,
+                            size: 14,
+                            color: AppColors.primaryContainer,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            prompt['label'] as String,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.getOnSurface(isDark),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
@@ -324,63 +517,96 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget _buildInputPanel(bool isLoading, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
         color: AppColors.getSurface(isDark),
         border: Border(
           top: BorderSide(
-            color: AppColors.getOutline(isDark).withValues(alpha: 0.15),
+            color: AppColors.getOutline(isDark).withValues(alpha: 0.12),
           ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Chat input field
+          // Chat text input
           Expanded(
             child: AccessibilityWrapper(
-              label: "Message input text field",
-              hint: "Type your query here",
-              child: TextField(
-                controller: _messageController,
-                textInputAction: TextInputAction.send,
-                onSubmitted: _handleSend,
-                decoration: InputDecoration(
-                  hintText: "Type message in any language...",
-                  hintStyle: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.getOnSurfaceVariant(
-                      isDark,
-                    ).withValues(alpha: 0.6),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.getSurfaceContainerHigh(isDark),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
+              label: 'Message input field',
+              hint: 'Type your stadium question in any language',
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.getSurfaceContainerHigh(isDark),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppColors.getOutlineVariant(isDark)
+                        .withValues(alpha: 0.5),
                   ),
                 ),
-                style: TextStyle(color: AppColors.getOnSurface(isDark)),
+                child: TextField(
+                  controller: _messageController,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: _handleSend,
+                  maxLines: 4,
+                  minLines: 1,
+                  decoration: InputDecoration(
+                    hintText: 'Ask me anything in any language...',
+                    hintStyle: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.getOnSurfaceVariant(isDark)
+                          .withValues(alpha: 0.6),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
+                  ),
+                  style: TextStyle(
+                    color: AppColors.getOnSurface(isDark),
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
-          // Send message action button
+          // Send button
           AccessibilityWrapper(
-            label: "Send message button",
-            hint: "Tap to ask the AI assistant",
+            label: 'Send message',
+            hint: 'Tap to ask the AI assistant',
             isButton: true,
-            child: CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColors.primaryContainer,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isLoading
+                    ? AppColors.primaryContainer.withValues(alpha: 0.5)
+                    : AppColors.primaryContainer,
+                shape: BoxShape.circle,
+                boxShadow: isLoading
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
               child: isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
+                  ? const Padding(
+                      padding: EdgeInsets.all(13.0),
                       child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
@@ -388,11 +614,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     )
                   : IconButton(
                       icon: const Icon(
-                        Icons.send,
+                        Icons.send_rounded,
                         color: Colors.white,
-                        size: 18,
+                        size: 20,
                       ),
                       onPressed: () => _handleSend(_messageController.text),
+                      padding: EdgeInsets.zero,
                     ),
             ),
           ),
