@@ -98,7 +98,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
           MessageModel(
             id: MessageModel.generateId(),
             content:
-                "🏟️ Welcome to **${stadiumData.stadiumName}**$nameStr!\n\nI’m watching the live stadium feed right now. The fastest food is **${bestFood.key} Zone** at ${bestFood.value.foodQueueMins} min, the quickest gate is **${bestGate.key}** at ${bestGate.value.queueMins} min, and merch is fastest in **${bestMerch.key} Zone** at ${bestMerch.value.merchQueueMins} min.\n\nAsk me anything about queues, routes, accessibility, or transport and I’ll steer you to the best option.",
+                "Welcome to **${stadiumData.stadiumName}**$nameStr!\n\nI’m watching the live stadium feed right now. The fastest food is **${bestFood.key} Zone** at ${bestFood.value.foodQueueMins} min, the quickest gate is **${bestGate.key}** at ${bestGate.value.queueMins} min, and merch is fastest in **${bestMerch.key} Zone** at ${bestMerch.value.merchQueueMins} min.\n\nAsk me anything about queues, routes, accessibility, or transport and I’ll steer you to the best option.",
             role: MessageRole.assistant,
             timestamp: DateTime.now(),
             suggestions: [

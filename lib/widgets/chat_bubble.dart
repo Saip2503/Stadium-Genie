@@ -108,72 +108,73 @@ class ChatBubble extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),
-                          bottomLeft: Radius.circular(16),
-                          bottomRight: Radius.circular(16),
-                        ),
-                        child: Stack(
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Left accent vertical line for AI assistant response
                             if (!isUser)
-                              Positioned(
-                                left: 0,
-                                top: 0,
-                                bottom: 0,
+                              Container(
                                 width: 4,
-                                child: Container(
-                                  color: AppColors.primaryContainer,
+                                color: AppColors.primaryContainer,
+                              ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    message.isLoading
+                                        ? _buildTypingIndicator(isDark)
+                                        : Text(
+                                            message.content,
+                                            style: textStyle,
+                                          ),
+                                    if (message.isAssistant &&
+                                        message.suggestions.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      Wrap(
+                                        spacing: 8,
+                                        runSpacing: 8,
+                                        children: message.suggestions.map((
+                                          suggestion,
+                                        ) {
+                                          return AccessibilityWrapper(
+                                            label:
+                                                'Suggested follow-up: $suggestion',
+                                            isButton: true,
+                                            child: ActionChip(
+                                              onPressed: onSuggestionTap == null
+                                                  ? null
+                                                  : () => onSuggestionTap!(
+                                                      suggestion,
+                                                    ),
+                                              backgroundColor:
+                                                  AppColors.getSurface(isDark),
+                                              side: BorderSide(
+                                                color: AppColors.getOutline(
+                                                  isDark,
+                                                ).withValues(alpha: 0.24),
+                                              ),
+                                              label: Text(
+                                                suggestion,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.getOnSurface(
+                                                    isDark,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
-
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: !isUser ? 20.0 : 16.0,
-                                right: 16.0,
-                                top: 12.0,
-                                bottom: 12.0,
-                              ),
-                              child: message.isLoading
-                                  ? _buildTypingIndicator(isDark)
-                                  : Text(message.content, style: textStyle),
                             ),
-                            if (message.isAssistant &&
-                                message.suggestions.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: message.suggestions.map((suggestion) {
-                                  return AccessibilityWrapper(
-                                    label: 'Suggested follow-up: $suggestion',
-                                    isButton: true,
-                                    child: ActionChip(
-                                      onPressed: onSuggestionTap == null
-                                          ? null
-                                          : () => onSuggestionTap!(suggestion),
-                                      backgroundColor:
-                                          AppColors.getSurfaceContainer(isDark),
-                                      side: BorderSide(
-                                        color: AppColors.getOutline(
-                                          isDark,
-                                        ).withValues(alpha: 0.2),
-                                      ),
-                                      label: Text(
-                                        suggestion,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.getOnSurface(isDark),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ],
                           ],
                         ),
                       ),

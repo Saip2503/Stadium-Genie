@@ -8,6 +8,7 @@ class AIService {
   GenerativeModel? _model;
   String? _initializedApiKey;
   String? _initializedSystemPrompt;
+  DateTime? _quotaCooldownUntil;
 
   static const missingApiKeyMessage =
       "AI setup needed: add a .env file at the project root with AI_API_KEY=your_gemini_api_key. The app will keep running with simulated stadium guidance until a key is provided.";
@@ -21,6 +22,11 @@ class AIService {
   }
 
   bool get hasConfiguredApiKey => _readApiKey().isNotEmpty;
+
+  bool get _isQuotaCoolingDown {
+    final until = _quotaCooldownUntil;
+    return until != null && DateTime.now().isBefore(until);
+  }
 
   /// Initializes the Gemini generative model.
   /// If the model is already initialized with the current API key and system prompt, it is reused.
@@ -70,6 +76,15 @@ class AIService {
       return;
     }
 
+    if (_isQuotaCoolingDown) {
+      yield "Gemini quota is temporarily busy, so I’m using the built-in stadium operations helper right now.\n\n";
+      yield* _generateMockFallbackResponse(
+        conversationHistory.last.content,
+        systemPrompt,
+      );
+      return;
+    }
+
     try {
       // Convert message history to Content objects for Gemini API
       final contents = conversationHistory.map((msg) {
@@ -84,14 +99,35 @@ class AIService {
 
       final responseStream = _model!.generateContentStream(contents);
 
+      var receivedText = false;
       await for (final chunk in responseStream) {
         if (chunk.text != null) {
+          receivedText = true;
           yield chunk.text!;
         }
       }
+
+      if (!receivedText) {
+        yield "Gemini did not return text, so I’m using the built-in stadium operations helper right now.\n\n";
+        yield* _generateMockFallbackResponse(
+          conversationHistory.last.content,
+          systemPrompt,
+        );
+      }
     } catch (e) {
-      // Return error message and fallback response stream
-      yield "Connection error from Gemini. Here is a simulated helper response:\n\n";
+      final errorText = e.toString().toLowerCase();
+      final isQuotaError =
+          errorText.contains('429') ||
+          errorText.contains('quota') ||
+          errorText.contains('resource_exhausted');
+
+      if (isQuotaError) {
+        _quotaCooldownUntil = DateTime.now().add(const Duration(minutes: 2));
+        yield "Gemini quota is temporarily busy, so I’m using the built-in stadium operations helper right now.\n\n";
+      } else {
+        yield "Gemini is temporarily unavailable, so I’m using the built-in stadium operations helper right now.\n\n";
+      }
+
       yield* _generateMockFallbackResponse(
         conversationHistory.last.content,
         systemPrompt,
