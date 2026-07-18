@@ -35,9 +35,10 @@ Create a `.env` file at the project root:
 
 ```env
 AI_API_KEY=your_gemini_api_key_here
+AI_MODEL=gemini-3.5-flash
 ```
 
-The app also accepts `GEMINI_API_KEY` and `API_KEY`, but `AI_API_KEY` is the preferred key in this repo.
+The app also accepts `GEMINI_API_KEY`, `API_KEY`, and `GEMINI_MODEL`, but `AI_API_KEY` and `AI_MODEL` are the preferred names in this repo. Use `gemini-3.1-flash-lite` for a lighter fallback model if your API quota requires it.
 
 ## Firebase Setup
 
@@ -65,6 +66,7 @@ In Vercel project settings, add this environment variable:
 
 ```env
 AI_API_KEY=your_gemini_api_key_here
+AI_MODEL=gemini-3.5-flash
 ```
 
 Vercel runs:

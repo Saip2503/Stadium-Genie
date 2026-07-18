@@ -21,6 +21,13 @@ class AIService {
         .trim();
   }
 
+  String _readModelName() {
+    return (dotenv.env['AI_MODEL'] ??
+            dotenv.env['GEMINI_MODEL'] ??
+            'gemini-3.5-flash')
+        .trim();
+  }
+
   bool get hasConfiguredApiKey => _readApiKey().isNotEmpty;
 
   bool get _isQuotaCoolingDown {
@@ -48,7 +55,7 @@ class AIService {
     _initializedApiKey = apiKey;
     _initializedSystemPrompt = systemPrompt;
     _model = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: _readModelName(),
       apiKey: apiKey,
       systemInstruction: Content.system(systemPrompt),
       safetySettings: [
@@ -120,10 +127,16 @@ class AIService {
           errorText.contains('429') ||
           errorText.contains('quota') ||
           errorText.contains('resource_exhausted');
+      final isModelUnavailableError =
+          errorText.contains('404') ||
+          errorText.contains('not found') ||
+          errorText.contains('model');
 
       if (isQuotaError) {
         _quotaCooldownUntil = DateTime.now().add(const Duration(minutes: 2));
         yield "Gemini quota is temporarily busy, so I’m using the built-in stadium operations helper right now.\n\n";
+      } else if (isModelUnavailableError) {
+        yield "Gemini model access is unavailable for this deployment, so I’m using the built-in stadium operations helper right now.\n\n";
       } else {
         yield "Gemini is temporarily unavailable, so I’m using the built-in stadium operations helper right now.\n\n";
       }
