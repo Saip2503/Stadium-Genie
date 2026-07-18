@@ -175,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                           ),
                         )
-                      else
+                      else ...[
                         ElevatedButton(
                           onPressed: _handleGoogleSignIn,
                           style: ElevatedButton.styleFrom(
@@ -221,6 +221,42 @@ class _LoginScreenState extends State<LoginScreen>
                             ],
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            setState(() => _isLoading = true);
+                            try {
+                              await _authService.signInAnonymously();
+                            } catch (e) {
+                              if (mounted) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text('Guest Sign-In failed: ${e.toString()}'),
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+                              }
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: const Text(
+                            'Continue as Guest',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 24),
 
@@ -245,17 +281,6 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        "If sign-in reports Firebase configuration missing, enable Authentication > Google provider in the Firebase Console for project stadium-genie.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 11,
-                          color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
-                          height: 1.35,
-                        ),
                       ),
                     ],
                   ),

@@ -333,7 +333,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       children: [
                         _buildHeroBadge(
                           Icons.people,
-                          '${_formatNum(data.attendance)} fans',
+                          '${_formatNum(data.capacity)} cap',
                         ),
                         const SizedBox(width: 8),
                         _buildHeroBadge(

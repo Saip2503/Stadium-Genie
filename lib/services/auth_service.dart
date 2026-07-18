@@ -56,6 +56,20 @@ class AuthService {
     }
   }
 
+  Future<UserCredential> signInAnonymously() async {
+    try {
+      return await _auth.signInAnonymously();
+    } on FirebaseAuthException catch (e) {
+      debugPrint("Anonymous sign in failed: ${e.code} ${e.message}");
+      throw AuthServiceException(
+        e.message ?? 'Anonymous sign-in failed. Please verify Firebase Authentication is configured.',
+      );
+    } catch (e) {
+      debugPrint("Anonymous sign in failed: $e");
+      rethrow;
+    }
+  }
+
   Future<void> signOut() async {
     try {
       await _auth.signOut();
