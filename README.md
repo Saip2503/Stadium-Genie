@@ -48,7 +48,39 @@ If Google sign-in shows a `configuration-not-found` error:
 1. Open the Firebase Console for project `stadium-genie`
 2. Enable Authentication
 3. Enable the Google sign-in provider
-4. Confirm the web app configuration matches the generated options file
+4. Enable Anonymous sign-in if you want judges to try the app without Google
+5. Add the deployed Vercel domain to Authentication > Settings > Authorized domains:
+
+```text
+stadium-genie-jet.vercel.app
+```
+
+6. Confirm the web app configuration matches the generated options file
+
+## Vercel Deployment
+
+This repo includes `vercel.json`, `package.json`, and `scripts/write_env_for_vercel.js` for Flutter Web deployment.
+
+In Vercel project settings, add this environment variable:
+
+```env
+AI_API_KEY=your_gemini_api_key_here
+```
+
+Vercel runs:
+
+```bash
+npm run vercel-build
+```
+
+The build script creates the `.env` asset from Vercel environment variables, installs Flutter stable if needed, builds with `flutter build web --release --base-href /`, and serves `build/web`.
+
+The Vercel rewrite sends all paths back to `index.html`, so both of these routes should load:
+
+```text
+https://stadium-genie-jet.vercel.app/
+https://stadium-genie-jet.vercel.app/#/chat
+```
 
 ## Run Locally
 

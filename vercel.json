@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "build/web",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
