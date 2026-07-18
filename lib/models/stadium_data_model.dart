@@ -89,6 +89,39 @@ class ZoneData {
     );
   }
 
+  ZoneData copyWith({
+    String? id,
+    String? displayName,
+    List<String>? sections,
+    int? foodQueueMins,
+    int? restroomQueueMins,
+    int? merchQueueMins,
+    CrowdLevel? crowdLevel,
+    int? crowdPercent,
+    bool? hasElevator,
+    bool? isWheelchairAccessible,
+    bool? isSensoryFriendly,
+    List<FoodStall>? foodStalls,
+    Map<String, int>? walkTimes,
+  }) {
+    return ZoneData(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      sections: sections ?? this.sections,
+      foodQueueMins: foodQueueMins ?? this.foodQueueMins,
+      restroomQueueMins: restroomQueueMins ?? this.restroomQueueMins,
+      merchQueueMins: merchQueueMins ?? this.merchQueueMins,
+      crowdLevel: crowdLevel ?? this.crowdLevel,
+      crowdPercent: crowdPercent ?? this.crowdPercent,
+      hasElevator: hasElevator ?? this.hasElevator,
+      isWheelchairAccessible:
+          isWheelchairAccessible ?? this.isWheelchairAccessible,
+      isSensoryFriendly: isSensoryFriendly ?? this.isSensoryFriendly,
+      foodStalls: foodStalls ?? this.foodStalls,
+      walkTimes: walkTimes ?? this.walkTimes,
+    );
+  }
+
   String get crowdLevelLabel {
     return switch (crowdLevel) {
       CrowdLevel.low => 'Low',
@@ -115,6 +148,25 @@ class GateData {
     required this.location,
     required this.transportNearby,
   });
+
+  GateData copyWith({
+    String? name,
+    int? queueMins,
+    bool? isOpen,
+    bool? isWheelchairAccessible,
+    String? location,
+    List<String>? transportNearby,
+  }) {
+    return GateData(
+      name: name ?? this.name,
+      queueMins: queueMins ?? this.queueMins,
+      isOpen: isOpen ?? this.isOpen,
+      isWheelchairAccessible:
+          isWheelchairAccessible ?? this.isWheelchairAccessible,
+      location: location ?? this.location,
+      transportNearby: transportNearby ?? this.transportNearby,
+    );
+  }
 
   factory GateData.fromJson(String name, Map<String, dynamic> json) {
     return GateData(
@@ -153,31 +205,90 @@ class StadiumAlert {
   }
 }
 
+/// A parking lot summary for the stadium campus
+class ParkingLotStatus {
+  final String name;
+  final int total;
+  final int available;
+  final int accessibleAvailable;
+
+  const ParkingLotStatus({
+    required this.name,
+    required this.total,
+    required this.available,
+    required this.accessibleAvailable,
+  });
+
+  factory ParkingLotStatus.fromJson(String name, Map<String, dynamic> json) {
+    return ParkingLotStatus(
+      name: name,
+      total: (json['total'] as num).toInt(),
+      available: (json['available'] as num).toInt(),
+      accessibleAvailable: (json['accessible_available'] as num).toInt(),
+    );
+  }
+}
+
 /// Root data model representing the full stadium status
 class StadiumData {
   final String stadiumName;
   final String event;
   final String match;
+  final DateTime kickoff;
   final DateTime lastUpdated;
   final Map<String, ZoneData> zones;
   final Map<String, GateData> gates;
   final List<StadiumAlert> alerts;
   final List<String> firstAidLocations;
   final String? guestServicesLocation;
+  final Map<String, ParkingLotStatus> parkingLots;
   final int capacity;
 
   const StadiumData({
     required this.stadiumName,
     required this.event,
     required this.match,
+    required this.kickoff,
     required this.lastUpdated,
     required this.zones,
     required this.gates,
     required this.alerts,
     this.firstAidLocations = const [],
     this.guestServicesLocation,
+    this.parkingLots = const {},
     required this.capacity,
   });
+
+  StadiumData copyWith({
+    String? stadiumName,
+    String? event,
+    String? match,
+    DateTime? kickoff,
+    DateTime? lastUpdated,
+    Map<String, ZoneData>? zones,
+    Map<String, GateData>? gates,
+    List<StadiumAlert>? alerts,
+    List<String>? firstAidLocations,
+    String? guestServicesLocation,
+    Map<String, ParkingLotStatus>? parkingLots,
+    int? capacity,
+  }) {
+    return StadiumData(
+      stadiumName: stadiumName ?? this.stadiumName,
+      event: event ?? this.event,
+      match: match ?? this.match,
+      kickoff: kickoff ?? this.kickoff,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      zones: zones ?? this.zones,
+      gates: gates ?? this.gates,
+      alerts: alerts ?? this.alerts,
+      firstAidLocations: firstAidLocations ?? this.firstAidLocations,
+      guestServicesLocation:
+          guestServicesLocation ?? this.guestServicesLocation,
+      parkingLots: parkingLots ?? this.parkingLots,
+      capacity: capacity ?? this.capacity,
+    );
+  }
 
   factory StadiumData.fromJson(Map<String, dynamic> json) {
     final zonesJson = json['zones'] as Map<String, dynamic>;
@@ -201,17 +312,26 @@ class StadiumData {
         .where((s) => s['is_staffed'] != false)
         .map((s) => s['location'] as String)
         .toList();
+    final parkingJson = json['transport'] as Map<String, dynamic>? ?? {};
+    final parkingLotsJson =
+        parkingJson['parking'] as Map<String, dynamic>? ?? {};
+    final parkingLots = parkingLotsJson.map(
+      (k, v) =>
+          MapEntry(k, ParkingLotStatus.fromJson(k, v as Map<String, dynamic>)),
+    );
 
     return StadiumData(
       stadiumName: json['stadium'] as String,
       event: json['event'] as String,
       match: json['match'] as String,
+      kickoff: DateTime.parse(json['kickoff'] as String),
       lastUpdated: DateTime.parse(json['last_updated'] as String),
       zones: zones,
       gates: gates,
       alerts: alerts,
       firstAidLocations: firstAidLocations,
       guestServicesLocation: servicesJson['guest_services'] as String?,
+      parkingLots: parkingLots,
       capacity: json['capacity'] as int,
     );
   }

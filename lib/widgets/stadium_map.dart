@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../models/stadium_data_model.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
@@ -198,79 +197,78 @@ class StadiumMap extends ConsumerWidget {
     }
 
     return InkWell(
-      onTap: () => ref.read(settingsProvider.notifier).setCurrentZone(zoneId),
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.primaryContainer.withValues(alpha: 0.8)
-              : Colors.black.withValues(alpha: 0.38),
+          onTap: () =>
+              ref.read(settingsProvider.notifier).setCurrentZone(zoneId),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isActive
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.4),
-            width: isActive ? 2 : 1,
-          ),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: AppColors.primaryContainer.withValues(alpha: 0.6),
-                    blurRadius: 12,
-                    spreadRadius: 2,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              color: isActive
+                  ? AppColors.primaryContainer.withValues(alpha: 0.8)
+                  : Colors.black.withValues(alpha: 0.38),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isActive
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.4),
+                width: isActive ? 2 : 1,
+              ),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primaryContainer.withValues(
+                          alpha: 0.6,
+                        ),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Center(
+              child: Flex(
+                direction: isVertical ? Axis.vertical : Axis.horizontal,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: Colors.white, size: isVertical ? 14 : 16),
+                  SizedBox(
+                    width: isVertical ? 0 : 3,
+                    height: isVertical ? 2 : 0,
                   ),
-                ]
-              : null,
-        ),
-        child: Center(
-          child: Flex(
-            direction: isVertical ? Axis.vertical : Axis.horizontal,
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: isVertical ? 14 : 16,
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(
+                    width: isVertical ? 0 : 4,
+                    height: isVertical ? 3 : 0,
+                  ),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                      boxShadow: zoneData?.crowdLevel == CrowdLevel.high
+                          ? [
+                              BoxShadow(
+                                color: statusColor.withValues(alpha: 0.9),
+                                blurRadius: 6,
+                                spreadRadius: 2,
+                              ),
+                            ]
+                          : null,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: isVertical ? 0 : 3, height: isVertical ? 2 : 0),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(width: isVertical ? 0 : 4, height: isVertical ? 3 : 0),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  shape: BoxShape.circle,
-                  boxShadow: zoneData?.crowdLevel == CrowdLevel.high
-                      ? [
-                          BoxShadow(
-                            color: statusColor.withValues(alpha: 0.9),
-                            blurRadius: 6,
-                            spreadRadius: 2,
-                          ),
-                        ]
-                      : null,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    )
-        .animate(target: isActive ? 1 : 0)
-        .scale(
-          begin: const Offset(1.0, 1.0),
-          end: const Offset(1.05, 1.05),
-          duration: 200.ms,
         );
   }
 

@@ -21,6 +21,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _hideApiKeyBanner = false;
 
   final List<Map<String, dynamic>> _suggestedPrompts = [
     {
@@ -46,7 +47,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     {
       'icon': Icons.accessible,
       'label': 'Wheelchair route',
-      'query': 'Show me wheelchair accessible routes to concessions from my section',
+      'query':
+          'Show me wheelchair accessible routes to concessions from my section',
     },
     {
       'icon': Icons.volume_mute,
@@ -61,7 +63,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     {
       'icon': Icons.translate,
       'label': '¿Hablas español?',
-      'query': '¿Puedes ayudarme en español? ¿Dónde está la puerta de salida más cercana?',
+      'query':
+          '¿Puedes ayudarme en español? ¿Dónde está la puerta de salida más cercana?',
     },
   ];
 
@@ -96,6 +99,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final chatState = ref.watch(chatProvider);
     final settings = ref.watch(settingsProvider);
     final isDark = settings.isDarkMode;
+    final aiRepo = ref.watch(aiRepositoryProvider);
 
     final mediaQuery = MediaQuery.of(context);
     final isDesktop = mediaQuery.size.width >= 900;
@@ -182,6 +186,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 children: [
                   // Location and Accessibility Context indicator bar
                   _buildContextIndicatorBar(settings, isDark),
+                  if (!aiRepo.hasConfiguredApiKey && !_hideApiKeyBanner)
+                    _buildSetupBanner(isDark),
 
                   // Error message banner
                   if (chatState.error != null)
@@ -200,7 +206,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             itemCount: chatState.messages.length,
                             itemBuilder: (context, index) {
                               final msg = chatState.messages[index];
-                              return ChatBubble(message: msg, isDark: isDark);
+                              return ChatBubble(
+                                message: msg,
+                                isDark: isDark,
+                                onSuggestionTap: (suggestion) =>
+                                    _handleSend(suggestion),
+                              );
                             },
                           ),
                   ),
@@ -237,17 +248,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
           // Hero welcome icon
           Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.primaryContainer.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.smart_toy_outlined,
-              size: 48,
-              color: AppColors.primaryContainer,
-            ),
-          )
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.smart_toy_outlined,
+                  size: 48,
+                  color: AppColors.primaryContainer,
+                ),
+              )
               .animate(onPlay: (c) => c.repeat(reverse: true))
               .scale(
                 begin: const Offset(1.0, 1.0),
@@ -381,9 +392,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       decoration: BoxDecoration(
         color: activeColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: activeColor.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: activeColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -445,8 +454,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         color: AppColors.getSurfaceContainer(isDark),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: AppColors.getOutlineVariant(isDark)
-                              .withValues(alpha: 0.5),
+                          color: AppColors.getOutlineVariant(
+                            isDark,
+                          ).withValues(alpha: 0.5),
                         ),
                       ),
                       child: Row(
@@ -546,22 +556,45 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   color: AppColors.getSurfaceContainerHigh(isDark),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: AppColors.getOutlineVariant(isDark)
-                        .withValues(alpha: 0.5),
+                    color: AppColors.getOutlineVariant(
+                      isDark,
+                    ).withValues(alpha: 0.5),
                   ),
                 ),
                 child: TextField(
                   controller: _messageController,
                   textInputAction: TextInputAction.send,
                   onSubmitted: _handleSend,
+                  maxLength: 500,
+                  buildCounter:
+                      (
+                        context, {
+                        required currentLength,
+                        required isFocused,
+                        maxLength,
+                      }) {
+                        final remaining = 500 - currentLength;
+                        final color = remaining < 40
+                            ? AppColors.tertiary
+                            : AppColors.getOnSurfaceVariant(isDark);
+                        return Text(
+                          '$remaining chars left',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: color,
+                          ),
+                        );
+                      },
                   maxLines: 4,
                   minLines: 1,
                   decoration: InputDecoration(
                     hintText: 'Ask me anything in any language...',
                     hintStyle: TextStyle(
                       fontSize: 14,
-                      color: AppColors.getOnSurfaceVariant(isDark)
-                          .withValues(alpha: 0.6),
+                      color: AppColors.getOnSurfaceVariant(
+                        isDark,
+                      ).withValues(alpha: 0.6),
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -598,7 +631,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ? null
                     : [
                         BoxShadow(
-                          color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                          color: AppColors.primaryContainer.withValues(
+                            alpha: 0.3,
+                          ),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -624,6 +659,49 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSetupBanner(bool isDark) {
+    return Dismissible(
+      key: const ValueKey('ai-setup-banner'),
+      direction: DismissDirection.horizontal,
+      onDismissed: (_) {
+        setState(() => _hideApiKeyBanner = true);
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainer,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: AppColors.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.info_outline,
+              size: 18,
+              color: AppColors.primaryContainer,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Add AI_API_KEY in .env to enable Gemini responses. The app keeps working with simulated stadium guidance until then.',
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.35,
+                  color: AppColors.getOnSurface(isDark),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

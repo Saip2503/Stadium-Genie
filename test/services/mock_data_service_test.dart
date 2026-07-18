@@ -8,6 +8,7 @@ void main() {
       stadiumName: "Test Arena",
       event: "World Cup Match",
       match: "Team A vs Team B",
+      kickoff: DateTime.parse("2026-07-18T20:00:00-04:00"),
       lastUpdated: DateTime.now(),
       capacity: 50000,
       zones: {
@@ -51,6 +52,14 @@ void main() {
         ),
       },
       alerts: [],
+      parkingLots: {
+        "Lot A": const ParkingLotStatus(
+          name: "Lot A",
+          total: 500,
+          available: 120,
+          accessibleAvailable: 15,
+        ),
+      },
     );
 
     final service = MockDataService();

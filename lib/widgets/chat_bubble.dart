@@ -9,8 +9,14 @@ import 'accessibility_wrapper.dart';
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
   final bool isDark;
+  final ValueChanged<String>? onSuggestionTap;
 
-  const ChatBubble({super.key, required this.message, required this.isDark});
+  const ChatBubble({
+    super.key,
+    required this.message,
+    required this.isDark,
+    this.onSuggestionTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -134,6 +140,40 @@ class ChatBubble extends StatelessWidget {
                                   ? _buildTypingIndicator(isDark)
                                   : Text(message.content, style: textStyle),
                             ),
+                            if (message.isAssistant &&
+                                message.suggestions.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: message.suggestions.map((suggestion) {
+                                  return AccessibilityWrapper(
+                                    label: 'Suggested follow-up: $suggestion',
+                                    isButton: true,
+                                    child: ActionChip(
+                                      onPressed: onSuggestionTap == null
+                                          ? null
+                                          : () => onSuggestionTap!(suggestion),
+                                      backgroundColor:
+                                          AppColors.getSurfaceContainer(isDark),
+                                      side: BorderSide(
+                                        color: AppColors.getOutline(
+                                          isDark,
+                                        ).withValues(alpha: 0.2),
+                                      ),
+                                      label: Text(
+                                        suggestion,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.getOnSurface(isDark),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
                           ],
                         ),
                       ),

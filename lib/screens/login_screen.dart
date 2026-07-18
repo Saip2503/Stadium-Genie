@@ -63,10 +63,7 @@ class _LoginScreenState extends State<LoginScreen>
         children: [
           // Premium Full-Screen Background Image
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/stadium.png',
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('assets/images/stadium.png', fit: BoxFit.cover),
           ),
 
           // High Contrast Dark Overlay for readability
@@ -97,7 +94,9 @@ class _LoginScreenState extends State<LoginScreen>
                   constraints: const BoxConstraints(maxWidth: 420),
                   padding: const EdgeInsets.all(32.0),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.95), // Premium glass-ish effect
+                    color: Colors.white.withValues(
+                      alpha: 0.95,
+                    ), // Premium glass-ish effect
                     borderRadius: BorderRadius.circular(24.0),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.2),
@@ -119,7 +118,9 @@ class _LoginScreenState extends State<LoginScreen>
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryContainer.withValues(alpha: 0.1),
+                          color: AppColors.primaryContainer.withValues(
+                            alpha: 0.1,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: ClipOval(
@@ -232,7 +233,9 @@ class _LoginScreenState extends State<LoginScreen>
                               if (mounted) {
                                 messenger.showSnackBar(
                                   SnackBar(
-                                    content: Text('Guest Sign-In failed: ${e.toString()}'),
+                                    content: Text(
+                                      'Guest Sign-In failed: ${e.toString()}',
+                                    ),
                                     backgroundColor: AppColors.error,
                                   ),
                                 );
@@ -261,26 +264,30 @@ class _LoginScreenState extends State<LoginScreen>
                       const SizedBox(height: 24),
 
                       // Info text
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.lock_outline,
-                            size: 14,
-                            color: AppColors.outline,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "Secure FIFA Match Day Authentication",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12,
+                      Center(
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: [
+                            const Icon(
+                              Icons.lock_outline,
+                              size: 14,
                               color: AppColors.outline,
-                              fontWeight: FontWeight.w600,
                             ),
-                          ),
-                        ],
+                            Text(
+                              "Secure FIFA Match Day Authentication",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 12,
+                                color: AppColors.outline,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as dart_math;
 import 'package:flutter/services.dart';
 import '../models/stadium_data_model.dart';
 
@@ -36,6 +37,10 @@ class MockDataService {
     buf.writeln('Stadium: ${data.stadiumName}');
     buf.writeln('Event: ${data.event}');
     buf.writeln('Match: ${data.match}');
+    buf.writeln('Kickoff: ${data.kickoff.toIso8601String()}');
+    buf.writeln(
+      'Minutes to kickoff: ${data.kickoff.difference(DateTime.now()).inMinutes}',
+    );
     buf.writeln('User Current Location: $userZone Zone');
     buf.writeln('');
 
@@ -101,6 +106,79 @@ class MockDataService {
       }
     }
 
+    buf.writeln('');
+    buf.writeln('--- TRANSPORT & PARKING ---');
+    final transportSet = <String>{};
+    for (final gate in data.gates.values) {
+      transportSet.addAll(gate.transportNearby);
+    }
+    if (transportSet.isNotEmpty) {
+      buf.writeln('Available transport: ${transportSet.join(", ")}');
+    }
+    if (data.parkingLots.isNotEmpty) {
+      buf.writeln('Parking availability:');
+      for (final lot in data.parkingLots.values) {
+        buf.writeln(
+          '  ${lot.name}: ${lot.available}/${lot.total} available, accessible spots ${lot.accessibleAvailable}',
+        );
+      }
+    }
+
     return buf.toString();
+  }
+
+  /// Simulates real-time variations in stadium data
+  StadiumData simulateUpdate(StadiumData current) {
+    final random = dart_math.Random();
+
+    // update zone crowd capacity percentages (+/- 1-5%, within 10-100%)
+    // update zone food/restroom queue times (+/- 1-3 mins, keeping queues >= 0)
+    final updatedZones = current.zones.map((key, zone) {
+      final crowdDelta = random.nextBool()
+          ? (random.nextInt(5) + 1)
+          : -(random.nextInt(5) + 1);
+      final newCrowdPercent = (zone.crowdPercent + crowdDelta).clamp(10, 100);
+
+      final foodQueueDelta = random.nextBool()
+          ? (random.nextInt(3) + 1)
+          : -(random.nextInt(3) + 1);
+      final newFoodQueue = dart_math.max(
+        0,
+        zone.foodQueueMins + foodQueueDelta,
+      );
+
+      final restroomQueueDelta = random.nextBool()
+          ? (random.nextInt(3) + 1)
+          : -(random.nextInt(3) + 1);
+      final newRestroomQueue = dart_math.max(
+        0,
+        zone.restroomQueueMins + restroomQueueDelta,
+      );
+
+      return MapEntry(
+        key,
+        zone.copyWith(
+          crowdPercent: newCrowdPercent,
+          foodQueueMins: newFoodQueue,
+          restroomQueueMins: newRestroomQueue,
+        ),
+      );
+    });
+
+    final updatedGates = current.gates.map((key, gate) {
+      final queueDelta = random.nextBool()
+          ? (random.nextInt(3) + 1)
+          : -(random.nextInt(3) + 1);
+      return MapEntry(
+        key,
+        gate.copyWith(queueMins: dart_math.max(0, gate.queueMins + queueDelta)),
+      );
+    });
+
+    return current.copyWith(
+      zones: updatedZones,
+      gates: updatedGates,
+      lastUpdated: DateTime.now(),
+    );
   }
 }

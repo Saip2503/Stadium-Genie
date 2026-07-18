@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../models/stadium_data_model.dart';
 import '../providers/chat_provider.dart';
 import '../providers/settings_provider.dart';
@@ -20,24 +19,7 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
+class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
@@ -101,8 +83,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                     children: [
                                       Expanded(
                                         flex: 4,
-                                        child:
-                                            _buildMapSection(data, isDark),
+                                        child: _buildMapSection(data, isDark),
                                       ),
                                       const SizedBox(width: 24),
                                       Expanded(
@@ -162,14 +143,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             fontSize: 15,
           ),
         ),
-      )
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .scale(
-            begin: const Offset(1.0, 1.0),
-            end: const Offset(1.03, 1.03),
-            duration: 1500.ms,
-            curve: Curves.easeInOut,
-          ),
+      ),
 
       // Mobile Bottom Nav
       bottomNavigationBar: !isDesktop
@@ -189,7 +163,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryContainer),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              AppColors.primaryContainer,
+            ),
             strokeWidth: 3,
           ),
           const SizedBox(height: 16),
@@ -233,10 +209,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               errorBuilder: (context, error, stackTrace) => Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primaryContainer,
-                    ],
+                    colors: [AppColors.primary, AppColors.primaryContainer],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -275,33 +248,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       color: AppColors.tertiaryContainer,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedBuilder(
-                          animation: _pulseController,
-                          builder: (context, child) => Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(
-                                alpha: _pulseController.value,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'LIVE DATA',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ],
+                    child: const Text(
+                      'LIVE DATA',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -348,7 +302,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ],
         ),
       ),
-    ).animate().fade(duration: 500.ms).slideY(begin: 0.04, duration: 500.ms);
+    );
   }
 
   Widget _buildHeroBadge(IconData icon, String label) {
@@ -357,9 +311,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -387,11 +339,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   /// Quick AI prompts row — contextual shortcuts
   Widget _buildAIQuickActions(bool isDark) {
     final actions = [
-      (icon: Icons.wc, label: 'Nearest restroom', query: 'Find the nearest restroom with shortest queue from my zone'),
-      (icon: Icons.fastfood, label: 'Fastest food', query: 'Which food stand has the shortest wait near me?'),
-      (icon: Icons.accessible, label: 'Accessible route', query: 'Show me wheelchair accessible routes to concessions'),
-      (icon: Icons.translate, label: 'Help me in Spanish', query: '¿Dónde está la salida más cercana?'),
-      (icon: Icons.directions, label: 'My seat direction', query: 'How do I get to my seat from the main entrance?'),
+      (
+        icon: Icons.wc,
+        label: 'Nearest restroom',
+        query: 'Find the nearest restroom with shortest queue from my zone',
+      ),
+      (
+        icon: Icons.fastfood,
+        label: 'Fastest food',
+        query: 'Which food stand has the shortest wait near me?',
+      ),
+      (
+        icon: Icons.accessible,
+        label: 'Accessible route',
+        query: 'Show me wheelchair accessible routes to concessions',
+      ),
+      (
+        icon: Icons.translate,
+        label: 'Help me in Spanish',
+        query: '¿Dónde está la salida más cercana?',
+      ),
+      (
+        icon: Icons.directions,
+        label: 'My seat direction',
+        query: 'How do I get to my seat from the main entrance?',
+      ),
     ];
 
     return Column(
@@ -425,9 +397,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 icon: action.icon,
                 label: action.label,
                 onTap: () {
-                  ref
-                      .read(chatProvider.notifier)
-                      .sendMessage(action.query);
+                  ref.read(chatProvider.notifier).sendMessage(action.query);
                   Navigator.pushNamed(context, '/chat');
                 },
                 isDark: isDark,
@@ -488,7 +458,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -673,92 +647,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           children: items.asMap().entries.map((entry) {
             final item = entry.value;
             return AccessibilityWrapper(
-              label: '${item.title}: ${item.value}, ${item.detail}',
-              child: SizedBox(
-                width: isNarrow
-                    ? constraints.maxWidth
-                    : (constraints.maxWidth - 24) / 3,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.getSurface(isDark),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.getOutlineVariant(isDark)
-                          .withValues(alpha: 0.5),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: item.bg.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
+                  label: '${item.title}: ${item.value}, ${item.detail}',
+                  child: SizedBox(
+                    width: isNarrow
+                        ? constraints.maxWidth
+                        : (constraints.maxWidth - 24) / 3,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.getSurface(isDark),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.getOutlineVariant(
+                            isDark,
+                          ).withValues(alpha: 0.5),
                         ),
-                        child: Icon(item.icon, color: item.color, size: 22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.title,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.5,
-                                color: AppColors.getOnSurfaceVariant(isDark),
-                              ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: item.bg.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              item.value,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.getOnSurface(isDark),
-                              ),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(top: 2),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: item.bg.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                item.detail,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: item.color,
+                            child: Icon(item.icon, color: item.color, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.title,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                    color: AppColors.getOnSurfaceVariant(
+                                      isDark,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  item.value,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.getOnSurface(isDark),
+                                  ),
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.only(top: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: item.bg.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    item.detail,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: item.color,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            )
-                .animate()
-                .fade(delay: (entry.key * 80).ms, duration: 400.ms)
-                .slideY(begin: 0.1, duration: 400.ms);
+                );
           }).toList(),
         );
       },
@@ -884,8 +858,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
-                      onPressed: () =>
-                          Navigator.pushNamed(context, '/chat'),
+                      onPressed: () => Navigator.pushNamed(context, '/chat'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: AppColors.primaryContainer,
