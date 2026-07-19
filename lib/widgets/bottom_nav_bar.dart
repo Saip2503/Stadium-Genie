@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
+import '../providers/settings_provider.dart';
 import 'accessibility_wrapper.dart';
 
 /// Renders a thumb-friendly bottom navigation bar for mobile/tablet screen sizes.
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends ConsumerWidget {
   final String activeRoute;
   final bool isDark;
   final Function(String) onNavigate;
@@ -16,7 +18,7 @@ class BottomNavBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       height: 72,
       decoration: BoxDecoration(
@@ -57,6 +59,13 @@ class BottomNavBar extends StatelessWidget {
               'Settings',
               'Settings and accessibility options',
             ),
+            if (ref.watch(settingsProvider).staffModeEnabled)
+              _buildNavItem(
+                '/staff',
+                Icons.admin_panel_settings,
+                'Staff',
+                'Staff control room dashboard',
+              ),
           ],
         ),
       ),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
+import '../providers/settings_provider.dart';
 import 'accessibility_wrapper.dart';
 
 /// Renders a persistent desktop side navigation bar matching the Stitch project spec
-class SideNavBar extends StatelessWidget {
+class SideNavBar extends ConsumerWidget {
   final String activeRoute;
   final bool isDark;
   final Function(String) onNavigate;
@@ -17,7 +19,7 @@ class SideNavBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final user = FirebaseAuth.instance.currentUser;
     return Container(
       width: 288, // w-72 matching Stitch tokens
@@ -146,6 +148,12 @@ class SideNavBar extends StatelessWidget {
                   label: 'Accessibility',
                   icon: Icons.accessibility_new,
                 ),
+                if (ref.watch(settingsProvider).staffModeEnabled)
+                  _buildNavItem(
+                    route: '/staff',
+                    label: 'Control Room',
+                    icon: Icons.admin_panel_settings,
+                  ),
               ],
             ),
           ),

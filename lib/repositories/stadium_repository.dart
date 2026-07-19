@@ -13,16 +13,19 @@ abstract class StadiumRepository {
 }
 
 class StadiumRepositoryImpl implements StadiumRepository {
-  final MockDataService _service;
+  final MockDataService _mockDataService;
 
-  StadiumRepositoryImpl(this._service);
-
-  @override
-  Future<StadiumData> getStadiumData() => _service.loadStadiumData();
+  StadiumRepositoryImpl(this._mockDataService);
 
   @override
-  StadiumData simulateUpdate(StadiumData current) =>
-      _service.simulateUpdate(current);
+  Future<StadiumData> getStadiumData() {
+    return _mockDataService.loadStadiumData();
+  }
+
+  @override
+  StadiumData simulateUpdate(StadiumData current) {
+    return _mockDataService.simulateUpdate(current);
+  }
 
   @override
   String buildContextString({
@@ -31,7 +34,7 @@ class StadiumRepositoryImpl implements StadiumRepository {
     required bool wheelchairMode,
     required bool sensoryMode,
   }) {
-    return _service.buildContextString(
+    return _mockDataService.buildContextString(
       data: data,
       userZone: userZone,
       wheelchairMode: wheelchairMode,

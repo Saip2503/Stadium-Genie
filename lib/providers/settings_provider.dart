@@ -7,12 +7,14 @@ class UserSettings {
   final bool sensoryFriendlyMode;
   final String currentZone;
   final bool isDarkMode;
+  final bool staffModeEnabled;
 
   const UserSettings({
     required this.wheelchairMode,
     required this.sensoryFriendlyMode,
     required this.currentZone,
     required this.isDarkMode,
+    required this.staffModeEnabled,
   });
 
   UserSettings copyWith({
@@ -20,12 +22,14 @@ class UserSettings {
     bool? sensoryFriendlyMode,
     String? currentZone,
     bool? isDarkMode,
+    bool? staffModeEnabled,
   }) {
     return UserSettings(
       wheelchairMode: wheelchairMode ?? this.wheelchairMode,
       sensoryFriendlyMode: sensoryFriendlyMode ?? this.sensoryFriendlyMode,
       currentZone: currentZone ?? this.currentZone,
       isDarkMode: isDarkMode ?? this.isDarkMode,
+      staffModeEnabled: staffModeEnabled ?? this.staffModeEnabled,
     );
   }
 }
@@ -41,6 +45,7 @@ class SettingsNotifier extends StateNotifier<UserSettings> {
           sensoryFriendlyMode: false,
           currentZone: 'North',
           isDarkMode: false,
+          staffModeEnabled: false,
         ),
       ) {
     _loadSettings();
@@ -52,12 +57,14 @@ class SettingsNotifier extends StateNotifier<UserSettings> {
     final sf = _prefs?.getBool('sensoryFriendlyMode') ?? false;
     final zone = _prefs?.getString('currentZone') ?? 'North';
     final dark = _prefs?.getBool('isDarkMode') ?? false;
+    final staff = _prefs?.getBool('staffModeEnabled') ?? false;
 
     state = UserSettings(
       wheelchairMode: wc,
       sensoryFriendlyMode: sf,
       currentZone: zone,
       isDarkMode: dark,
+      staffModeEnabled: staff,
     );
   }
 
@@ -77,6 +84,12 @@ class SettingsNotifier extends StateNotifier<UserSettings> {
     final next = !state.isDarkMode;
     state = state.copyWith(isDarkMode: next);
     _prefs?.setBool('isDarkMode', next);
+  }
+
+  void toggleStaffMode() {
+    final next = !state.staffModeEnabled;
+    state = state.copyWith(staffModeEnabled: next);
+    _prefs?.setBool('staffModeEnabled', next);
   }
 
   void setCurrentZone(String zone) {

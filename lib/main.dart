@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'screens/staff_dashboard_screen.dart';
+
 import 'firebase_options.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
@@ -92,6 +94,7 @@ class StadiumGenieApp extends ConsumerWidget {
         '/home': (context) => const HomeScreen(),
         '/chat': (context) => const ChatScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/staff': (context) => const StaffDashboardScreen(),
       },
     );
   }

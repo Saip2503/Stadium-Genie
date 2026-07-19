@@ -287,6 +287,34 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                         ),
                         const Divider(),
+                        // Staff View Switch
+                        AccessibilityWrapper(
+                          label: "Staff and volunteer mode toggle switch",
+                          isToggled: settings.staffModeEnabled,
+                          child: SwitchListTile(
+                            secondary: Icon(
+                              Icons.admin_panel_settings,
+                              color: settings.staffModeEnabled
+                                  ? AppColors.primaryContainer
+                                  : Colors.grey,
+                            ),
+                            title: const Text(
+                              "Staff & Volunteer Dashboard Mode",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            subtitle: const Text(
+                              "Enables administrative metrics and operations AI chatbot",
+                            ),
+                            value: settings.staffModeEnabled,
+                            activeColor: AppColors.primaryContainer,
+                            onChanged: (value) {
+                              ref
+                                  .read(settingsProvider.notifier)
+                                  .toggleStaffMode();
+                            },
+                          ),
+                        ),
+                        const Divider(),
 
                         // Multilingual indicator listing
                         ListTile(
