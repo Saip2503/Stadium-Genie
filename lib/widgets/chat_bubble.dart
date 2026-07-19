@@ -193,8 +193,8 @@ class ChatBubble extends StatelessWidget {
 
   String _cleanMarkdownMarkers(String content) {
     return content
-        .replaceAll(RegExp(r'\*\*(.*?)\*\*'), r'$1')
-        .replaceAll(RegExp(r'__(.*?)__'), r'$1')
+        .replaceAllMapped(RegExp(r'\*\*(.*?)\*\*'), (match) => match.group(1)!)
+        .replaceAllMapped(RegExp(r'__(.*?)__'), (match) => match.group(1)!)
         .replaceAll('*', '')
         .trim();
   }
