@@ -21,6 +21,7 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUser = message.isUser;
+    final displayContent = _cleanMarkdownMarkers(message.content);
 
     final userBg = const LinearGradient(
       colors: [AppColors.primary, AppColors.primaryContainer],
@@ -65,7 +66,7 @@ class ChatBubble extends StatelessWidget {
                 // Interactive bubble
                 GestureDetector(
                   onLongPress: () {
-                    Clipboard.setData(ClipboardData(text: message.content));
+                    Clipboard.setData(ClipboardData(text: displayContent));
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Message copied to clipboard'),
@@ -75,7 +76,7 @@ class ChatBubble extends StatelessWidget {
                   },
                   child: AccessibilityWrapper(
                     label:
-                        "${isUser ? 'User message' : 'AI Assistant response'}: ${message.content}",
+                        "${isUser ? 'User message' : 'AI Assistant response'}: $displayContent",
                     hint: "Long press to copy text",
                     child: Container(
                       decoration: BoxDecoration(
@@ -127,7 +128,7 @@ class ChatBubble extends StatelessWidget {
                                     message.isLoading
                                         ? _buildTypingIndicator(isDark)
                                         : Text(
-                                            message.content,
+                                            displayContent,
                                             style: textStyle,
                                           ),
                                     if (message.isAssistant &&
@@ -188,6 +189,14 @@ class ChatBubble extends StatelessWidget {
         .animate()
         .fade(duration: 200.ms)
         .slideX(begin: isUser ? 0.05 : -0.05, duration: 200.ms);
+  }
+
+  String _cleanMarkdownMarkers(String content) {
+    return content
+        .replaceAll(RegExp(r'\*\*(.*?)\*\*'), r'$1')
+        .replaceAll(RegExp(r'__(.*?)__'), r'$1')
+        .replaceAll('*', '')
+        .trim();
   }
 
   Widget _buildTypingIndicator(bool isDark) {

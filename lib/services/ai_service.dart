@@ -10,9 +10,6 @@ class AIService {
   String? _initializedSystemPrompt;
   DateTime? _quotaCooldownUntil;
 
-  static const missingApiKeyMessage =
-      "AI setup needed: add a .env file at the project root with AI_API_KEY=your_gemini_api_key. The app will keep running with simulated stadium guidance until a key is provided.";
-
   String _readApiKey() {
     return (dotenv.env['AI_API_KEY'] ??
             dotenv.env['GEMINI_API_KEY'] ??
@@ -75,7 +72,6 @@ class AIService {
 
     if (_model == null) {
       // Fallback: Generate a smart simulated response locally if API key is missing.
-      yield "$missingApiKeyMessage\n\n";
       yield* _generateMockFallbackResponse(
         conversationHistory.last.content,
         systemPrompt,
@@ -84,7 +80,6 @@ class AIService {
     }
 
     if (_isQuotaCoolingDown) {
-      yield "Gemini quota is temporarily busy, so I’m using the built-in stadium operations helper right now.\n\n";
       yield* _generateMockFallbackResponse(
         conversationHistory.last.content,
         systemPrompt,
@@ -115,7 +110,6 @@ class AIService {
       }
 
       if (!receivedText) {
-        yield "Gemini did not return text, so I’m using the built-in stadium operations helper right now.\n\n";
         yield* _generateMockFallbackResponse(
           conversationHistory.last.content,
           systemPrompt,
@@ -127,18 +121,8 @@ class AIService {
           errorText.contains('429') ||
           errorText.contains('quota') ||
           errorText.contains('resource_exhausted');
-      final isModelUnavailableError =
-          errorText.contains('404') ||
-          errorText.contains('not found') ||
-          errorText.contains('model');
-
       if (isQuotaError) {
         _quotaCooldownUntil = DateTime.now().add(const Duration(minutes: 2));
-        yield "Gemini quota is temporarily busy, so I’m using the built-in stadium operations helper right now.\n\n";
-      } else if (isModelUnavailableError) {
-        yield "Gemini model access is unavailable for this deployment, so I’m using the built-in stadium operations helper right now.\n\n";
-      } else {
-        yield "Gemini is temporarily unavailable, so I’m using the built-in stadium operations helper right now.\n\n";
       }
 
       yield* _generateMockFallbackResponse(
