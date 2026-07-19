@@ -10,8 +10,15 @@ import '../widgets/stadium_map.dart';
 import '../widgets/zone_card.dart';
 import '../widgets/gate_row_item.dart';
 import '../widgets/accessibility_wrapper.dart';
+import '../widgets/emergency_info_card.dart';
+import '../widgets/home_hero_section.dart';
+import '../widgets/ai_quick_actions_strip.dart';
+import '../widgets/quick_status_cards.dart';
+import '../widgets/sustainability_card.dart';
+import '../widgets/concourse_preview_card.dart';
 
 /// Main Dashboard showing Map, Queue Times, Gate statuses and Live IoT alerts.
+/// Refactored for modularity and high-quality design-system compliance.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -64,19 +71,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Hero Stadium Image + header overlay
-                                _buildHeroSection(data, isDark, isDesktop),
+                                HomeHeroSection(data: data, isDark: isDark, isDesktop: isDesktop),
                                 const SizedBox(height: 24),
 
                                 // Quick AI Suggestions Strip
-                                _buildAIQuickActions(isDark),
+                                AIQuickActionsStrip(isDark: isDark),
                                 const SizedBox(height: 24),
 
                                 // Quick Status Summary Cards
-                                _buildQuickStatusCards(data, isDark),
+                                QuickStatusCards(data: data, isDark: isDark),
                                 const SizedBox(height: 24),
 
-                                // Sustainability Card
-                                _buildSustainabilityCard(data, isDark),
+                                // Sustainability Card with CO2 metrics
+                                SustainabilityCard(data: data, isDark: isDark),
+                                const SizedBox(height: 24),
+
+                                // Emergency & Services Card with pulse animation
+                                EmergencyInfoCard(data: data, isDark: isDark),
                                 const SizedBox(height: 24),
 
                                 // Adaptive layout: Map + zones grid
@@ -120,7 +131,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 const SizedBox(height: 32),
                                 _buildGatesSection(data, isDark),
                                 const SizedBox(height: 32),
-                                _buildConcoursePreview(isDark),
+                                ConcoursePreviewCard(
+                                  isDark: isDark,
+                                  onAskAI: () => Navigator.pushNamed(context, '/chat'),
+                                ),
                                 const SizedBox(height: 80),
                               ],
                             ),
@@ -186,291 +200,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// Hero image with gradient overlay and stadium info
-  Widget _buildHeroSection(StadiumData? data, bool isDark, bool isDesktop) {
-    return Container(
-      width: double.infinity,
-      height: isDesktop ? 240 : 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryContainer.withValues(alpha: 0.2),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Real stadium photo
-            Image.asset(
-              'assets/images/stadium.png',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryContainer],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
-            ),
-
-            // Gradient overlay for text legibility
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.1),
-                    Colors.black.withValues(alpha: 0.72),
-                  ],
-                ),
-              ),
-            ),
-
-            // Hero content
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Live Badge Row
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.tertiaryContainer,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.circle, color: Colors.greenAccent, size: 8),
-                            SizedBox(width: 6),
-                            Text(
-                              'LIVE DATA',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      if (data != null)
-                        Text(
-                          'Last updated: ${data.lastUpdated.hour.toString().padLeft(2, '0')}:${data.lastUpdated.minute.toString().padLeft(2, '0')}:${data.lastUpdated.second.toString().padLeft(2, '0')}',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-
-                  Text(
-                    'FIFA WORLD CUP 2026',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    data?.stadiumName ?? 'MetLife Stadium',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Attendance badge
-                  if (data != null)
-                    Row(
-                      children: [
-                        _buildHeroBadge(
-                          Icons.people,
-                          '${_formatNum(data.capacity)} cap',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeroBadge(
-                          Icons.emoji_events,
-                          'Group Stage · Match Day',
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeroBadge(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 13),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatNum(int n) {
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}k';
-    return n.toString();
-  }
-
-  /// Quick AI prompts row — contextual shortcuts
-  Widget _buildAIQuickActions(bool isDark) {
-    final actions = [
-      (
-        icon: Icons.wc,
-        label: 'Nearest restroom',
-        query: 'Find the nearest restroom with shortest queue from my zone',
-      ),
-      (
-        icon: Icons.fastfood,
-        label: 'Fastest food',
-        query: 'Which food stand has the shortest wait near me?',
-      ),
-      (
-        icon: Icons.accessible,
-        label: 'Accessible route',
-        query: 'Show me wheelchair accessible routes to concessions',
-      ),
-      (
-        icon: Icons.translate,
-        label: 'Help me in Spanish',
-        query: '¿Dónde está la salida más cercana?',
-      ),
-      (
-        icon: Icons.directions,
-        label: 'My seat direction',
-        query: 'How do I get to my seat from the main entrance?',
-      ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.bolt, size: 16, color: AppColors.primaryContainer),
-            const SizedBox(width: 6),
-            Text(
-              'Quick AI Assist',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-                color: AppColors.primaryContainer,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 40,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: actions.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final action = actions[index];
-              return _buildQuickChip(
-                icon: action.icon,
-                label: action.label,
-                onTap: () {
-                  ref.read(chatProvider.notifier).sendMessage(action.query);
-                  Navigator.pushNamed(context, '/chat');
-                },
-                isDark: isDark,
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickChip({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required bool isDark,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.getSurfaceContainer(isDark),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppColors.getOutlineVariant(isDark).withValues(alpha: 0.6),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: AppColors.primaryContainer),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.getOnSurface(isDark),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildAlertBanner(List<StadiumAlert> alerts, bool isDark) {
     final alert = alerts.firstWhere(
       (a) => a.severity == 'warning',
@@ -500,6 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           IconButton(
+            tooltip: "Dismiss Alert",
             icon: const Icon(Icons.close, color: Colors.white, size: 16),
             onPressed: () {},
             padding: EdgeInsets.zero,
@@ -629,241 +359,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildQuickStatusCards(StadiumData? data, bool isDark) {
-    if (data == null) return const SizedBox.shrink();
-
-    final bestFood = data.zonesByFoodQueue.first;
-    final bestMerch = data.zonesByMerchQueue.first;
-    final bestGate = data.gatesByQueue.first;
-
-    final items = [
-      (
-        icon: Icons.fastfood_rounded,
-        title: 'Fastest Food',
-        value: '${bestFood.key} Zone',
-        detail: '${bestFood.value.foodQueueMins} min wait',
-        color: AppColors.secondary,
-        bg: AppColors.secondaryContainer,
-      ),
-      (
-        icon: Icons.storefront_rounded,
-        title: 'Best Merch',
-        value: '${bestMerch.key} Zone',
-        detail: '${bestMerch.value.merchQueueMins} min wait',
-        color: AppColors.primaryContainer,
-        bg: AppColors.primaryContainer,
-      ),
-      (
-        icon: Icons.door_front_door_rounded,
-        title: 'Fastest Gate',
-        value: bestGate.key,
-        detail: '${bestGate.value.queueMins} min wait',
-        color: AppColors.tertiaryContainer,
-        bg: AppColors.tertiaryContainer,
-      ),
-    ];
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth < 720;
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: items.asMap().entries.map((entry) {
-            final item = entry.value;
-            return AccessibilityWrapper(
-                  label: '${item.title}: ${item.value}, ${item.detail}',
-                  child: SizedBox(
-                    width: isNarrow
-                        ? constraints.maxWidth
-                        : (constraints.maxWidth - 24) / 3,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.getSurface(isDark),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.getOutlineVariant(
-                            isDark,
-                          ).withValues(alpha: 0.5),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: item.bg.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(item.icon, color: item.color, size: 22),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.title,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
-                                    color: AppColors.getOnSurfaceVariant(
-                                      isDark,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  item.value,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.getOnSurface(isDark),
-                                  ),
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.only(top: 2),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: item.bg.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    item.detail,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: item.color,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  Widget _buildSustainabilityCard(StadiumData? data, bool isDark) {
-    if (data == null) return const SizedBox.shrink();
-
-    int availableSpots = 0;
-    int totalSpots = 0;
-    for (final lot in data.parkingLots.values) {
-      availableSpots += lot.available;
-      totalSpots += lot.total;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1B3B2B) : const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark
-              ? const Color(0xFF2E7D32).withValues(alpha: 0.5)
-              : const Color(0xFFC8E6C9),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2E7D32).withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.eco,
-              color: Color(0xFF2E7D32),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      '🌱 SUSTAINABILITY ACTION',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.0,
-                        color: Color(0xFF2E7D32),
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'Parking: $availableSpots/$totalSpots left',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white70 : Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Choose NJ Transit rail instead of driving to save ~2.4kg of CO₂ emissions.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.getOnSurface(isDark),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: () {
-              ref.read(chatProvider.notifier).sendMessage(
-                'How can I take the NJ Transit train, and what are the carbon savings?',
-              );
-              Navigator.pushNamed(context, '/chat');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2E7D32),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text(
-              'Eco route',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildGatesSection(StadiumData? data, bool isDark) {
     if (data == null) return const SizedBox.shrink();
 
@@ -899,118 +394,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  /// Stadium concourse preview section
-  Widget _buildConcoursePreview(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            // Concourse image
-            Image.asset(
-              'assets/images/stadium_concourse.png',
-              width: double.infinity,
-              height: 180,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 180,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.surfaceContainer,
-                      AppColors.surfaceContainerHigh,
-                    ],
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.stadium,
-                    size: 64,
-                    color: AppColors.primaryContainer,
-                  ),
-                ),
-              ),
-            ),
-
-            // Overlay
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerRight,
-                    end: Alignment.centerLeft,
-                    colors: [
-                      AppColors.primaryContainer.withValues(alpha: 0.85),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Call-to-action content
-            Positioned(
-              right: 24,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'Navigate the\nConcourse',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        height: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: () => Navigator.pushNamed(context, '/chat'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.primaryContainer,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      icon: const Icon(Icons.bolt, size: 16),
-                      label: const Text(
-                        'Ask AI Guide',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

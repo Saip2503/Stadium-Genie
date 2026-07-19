@@ -8,6 +8,8 @@ import '../widgets/side_nav_bar.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../models/message_model.dart';
 
+/// Operational command center panel for stadium administrators and staff volunteers.
+/// Renders key crowd/gate metrics and provides specialized AI chat capabilities for staff.
 class StaffDashboardScreen extends ConsumerStatefulWidget {
   const StaffDashboardScreen({super.key});
 
@@ -33,12 +35,41 @@ class _StaffDashboardScreenState extends ConsumerState<StaffDashboardScreen> {
     );
   }
 
+  DateTime? _lastMessageTime;
+
   Future<void> _sendStaffMessage(String text) async {
     if (text.trim().isEmpty || _isLoading) return;
 
+    // Rate limiting: 1 message per 2 seconds
+    final now = DateTime.now();
+    if (_lastMessageTime != null &&
+        now.difference(_lastMessageTime!).inSeconds < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please wait a moment before sending another query."),
+        ),
+      );
+      return;
+    }
+
+    // Input validation
+    if (text.length > 500) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Query is too long (max 500 characters)."),
+        ),
+      );
+      return;
+    }
+
+    // Sanitize input (basic)
+    final sanitizedText = text.replaceAll(RegExp(r'[<>\u0000-\u001F\u200B-\u200F\uFEFF]'), '');
+
+    _lastMessageTime = now;
+
     final userMsg = MessageModel(
       id: MessageModel.generateId(),
-      content: text,
+      content: sanitizedText,
       role: MessageRole.user,
       timestamp: DateTime.now(),
     );
@@ -153,62 +184,93 @@ $mockContext
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.getBackground(isDark),
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const Icon(Icons.admin_panel_settings, color: AppColors.primaryContainer),
-            const SizedBox(width: 8),
-            Text(
-              "Operations & Volunteers Control Room",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.getOnSurface(isDark),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppColors.getBackground(isDark),
+        appBar: AppBar(
+          title: Row(
+            children: [
+              const Icon(Icons.admin_panel_settings, color: AppColors.primaryContainer),
+              const SizedBox(width: 8),
+              Text(
+                "Operations Control Room",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.getOnSurface(isDark),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          backgroundColor: AppColors.getSurface(isDark),
+          elevation: 0,
+          bottom: TabBar(
+            tabs: const [
+              Tab(text: "Live Metrics", icon: Icon(Icons.analytics_outlined)),
+              Tab(text: "Volunteer Roster", icon: Icon(Icons.people_outline)),
+            ],
+            labelColor: AppColors.primaryContainer,
+            unselectedLabelColor: AppColors.getOnSurfaceVariant(isDark),
+            indicatorColor: AppColors.primaryContainer,
+          ),
         ),
-        backgroundColor: AppColors.getSurface(isDark),
-        elevation: 0,
-      ),
-      body: Row(
-        children: [
-          if (isDesktop)
-            SideNavBar(
-              activeRoute: '/staff',
-              isDark: isDark,
-              onNavigate: (route) => Navigator.pushReplacementNamed(context, route),
-            ),
-          Expanded(
-            child: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        body: Row(
+          children: [
+            if (isDesktop)
+              SideNavBar(
+                activeRoute: '/staff',
+                isDark: isDark,
+                onNavigate: (route) => Navigator.pushReplacementNamed(context, route),
+              ),
+            Expanded(
+              child: SafeArea(
+                child: TabBarView(
                   children: [
-                    if (data != null) ...[
-                      _buildAlertsSection(data, isDark),
-                      const SizedBox(height: 24),
-                      _buildMetricsGrid(data, isDark, isDesktop),
-                      const SizedBox(height: 24),
-                      _buildStaffChatPanel(isDark),
-                    ],
+                    // Tab 1: Live Metrics
+                    SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (data != null) ...[
+                            _buildAlertsSection(data, isDark),
+                            const SizedBox(height: 24),
+                            _buildMetricsGrid(data, isDark, isDesktop),
+                            const SizedBox(height: 24),
+                            _buildAlertEscalationCard(isDark),
+                            const SizedBox(height: 24),
+                            _buildStaffChatPanel(isDark),
+                          ],
+                        ],
+                      ),
+                    ),
+                    // Tab 2: Volunteer Roster
+                    SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildVolunteerRosterDetailed(isDark),
+                          const SizedBox(height: 24),
+                          _buildStaffChatPanel(isDark),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+        bottomNavigationBar: !isDesktop
+            ? BottomNavBar(
+                activeRoute: '/staff',
+                isDark: isDark,
+                onNavigate: (route) => Navigator.pushReplacementNamed(context, route),
+              )
+            : null,
       ),
-      bottomNavigationBar: !isDesktop
-          ? BottomNavBar(
-              activeRoute: '/staff',
-              isDark: isDark,
-              onNavigate: (route) => Navigator.pushReplacementNamed(context, route),
-            )
-          : null,
     );
   }
 
@@ -389,6 +451,21 @@ $mockContext
       ),
       child: Column(
         children: [
+          Row(
+            children: [
+              const Icon(Icons.bolt, color: AppColors.primaryContainer, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                "OPS AI ASSISTANT",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: AppColors.getOnSurfaceVariant(isDark),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Expanded(
             child: ListView.builder(
               itemCount: _staffMessages.length,
@@ -438,6 +515,117 @@ $mockContext
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildVolunteerRosterDetailed(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "VOLUNTEER ASSIGNMENTS",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.getOnSurfaceVariant(isDark),
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildVolunteerZoneCard("North Zone", 12, "Gate B Entry Support", Icons.door_sliding, isDark),
+        const SizedBox(height: 12),
+        _buildVolunteerZoneCard("South Zone", 8, "Elevator & Accessibility Assist", Icons.accessible, isDark),
+        const SizedBox(height: 12),
+        _buildVolunteerZoneCard("East Zone", 15, "Crowd Congestion Management", Icons.groups, isDark),
+        const SizedBox(height: 12),
+        _buildVolunteerZoneCard("West Zone", 10, "Sensory Room & Guest Services", Icons.support_agent, isDark),
+      ],
+    );
+  }
+
+  Widget _buildVolunteerZoneCard(String zone, int count, String task, IconData icon, bool isDark) {
+    return Card(
+      color: AppColors.getSurfaceContainer(isDark),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: AppColors.getOutline(isDark).withValues(alpha: 0.15)),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primaryContainer.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: AppColors.primaryContainer, size: 24),
+        ),
+        title: Text(zone, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(task),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.primaryContainer,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            "$count Staff",
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlertEscalationCard(bool isDark) {
+    return Card(
+      color: AppColors.getSurfaceContainer(isDark),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: AppColors.getOutline(isDark).withValues(alpha: 0.15)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "CRITICAL ACTION DESK",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.getOnSurfaceVariant(isDark),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "In case of extreme zone congestion, gate queues exceeding 45 minutes, or security situations, broadcast operational updates directly to the MetLife command node.",
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("🚨 Broadcasting congestion alert to MetLife Stadium Command Center Node..."),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.emergency_share, color: Colors.white, size: 18),
+                label: const Text("Escalate Crowd Alert", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade800,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

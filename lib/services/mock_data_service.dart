@@ -10,14 +10,14 @@ class MockDataService {
 
   /// Loads stadium data from the bundled asset JSON file
   Future<StadiumData> loadStadiumData() async {
-    if (_cachedData != null) return _cachedData!;
+    if (_cachedData != null) return _cachedData!.copyWith();
 
     final jsonStr = await rootBundle.loadString(
       'assets/data/stadium_status.json',
     );
     final json = jsonDecode(jsonStr) as Map<String, dynamic>;
     _cachedData = StadiumData.fromJson(json);
-    return _cachedData!;
+    return _cachedData!.copyWith();
   }
 
   /// Builds a structured context block to inject into the AI system prompt.
@@ -123,6 +123,14 @@ class MockDataService {
         );
       }
     }
+
+    buf.writeln('');
+    buf.writeln('--- STAFF & VOLUNTEER INFO ---');
+    buf.writeln('Volunteer Duty Roster:');
+    buf.writeln('  North Zone: 12 Volunteers - Gate B Entry Support');
+    buf.writeln('  South Zone: 8 Volunteers - Elevator Assist');
+    buf.writeln('  East Zone: 15 Volunteers - Crowd Control');
+    buf.writeln('  West Zone: 10 Volunteers - Sensory Room Support');
 
     return buf.toString();
   }
