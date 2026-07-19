@@ -193,12 +193,15 @@ $mockContext
             children: [
               const Icon(Icons.admin_panel_settings, color: AppColors.primaryContainer),
               const SizedBox(width: 8),
-              Text(
-                "Operations Control Room",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.getOnSurface(isDark),
+              Flexible(
+                child: Text(
+                  "Operations Control Room",
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.getOnSurface(isDark),
+                  ),
                 ),
               ),
             ],

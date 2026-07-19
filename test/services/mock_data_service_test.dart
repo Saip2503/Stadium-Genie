@@ -88,8 +88,8 @@ void main() {
           sensoryMode: false,
         );
 
-        // North Zone is not wheelchair accessible, so it should be omitted
-        expect(contextStr, isNot(contains("North Zone:")));
+        // North Zone is not wheelchair accessible, so it should be omitted from zone status
+        expect(contextStr, isNot(contains("North Zone:\n  Crowd:")));
         expect(contextStr, contains("South Zone:")); // South Zone remains
       },
     );

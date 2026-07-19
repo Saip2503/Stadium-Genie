@@ -268,25 +268,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Interactive Arena Map',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.getOnSurface(isDark),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Interactive Arena Map',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.getOnSurface(isDark),
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Tap zone to set your location',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.getOnSurfaceVariant(isDark),
+                    Text(
+                      'Tap zone to set your location',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.getOnSurfaceVariant(isDark),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -311,12 +313,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Zone Wait Times',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.getOnSurface(isDark),
+            Expanded(
+              child: Text(
+                'Zone Wait Times',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.getOnSurface(isDark),
+                ),
               ),
             ),
             Container(

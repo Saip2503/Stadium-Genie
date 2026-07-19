@@ -7,6 +7,7 @@ import '../repositories/ai_repository.dart';
 import '../repositories/stadium_repository.dart';
 import '../services/ai_service.dart';
 import '../services/mock_data_service.dart';
+import 'auth_provider.dart';
 import 'settings_provider.dart';
 
 final stadiumRepositoryProvider = Provider<StadiumRepository>((ref) {
@@ -89,21 +90,29 @@ class ChatNotifier extends StateNotifier<ChatState> {
     state = state.copyWith(isLoading: true);
     try {
       final stadiumData = await _stadiumRepository.getStadiumData();
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _ref.read(currentUserProvider);
       final nameStr = user?.displayName != null
           ? ", **${user!.displayName}**"
           : "";
-      final bestFood = stadiumData.zonesByFoodQueue.first;
-      final bestGate = stadiumData.gatesByQueue.first;
-      final bestMerch = stadiumData.zonesByMerchQueue.first;
+
+      String welcomeContent = "Welcome to **${stadiumData.stadiumName}**$nameStr!\n\nI’m watching the live stadium feed right now. ";
+      
+      if (stadiumData.zones.isNotEmpty && stadiumData.gates.isNotEmpty) {
+        final bestFood = stadiumData.zonesByFoodQueue.first;
+        final bestGate = stadiumData.gatesByQueue.first;
+        final bestMerch = stadiumData.zonesByMerchQueue.first;
+        welcomeContent += "The fastest food is **${bestFood.key} Zone** at ${bestFood.value.foodQueueMins} min, the quickest gate is **${bestGate.key}** at ${bestGate.value.queueMins} min, and merch is fastest in **${bestMerch.key} Zone** at ${bestMerch.value.merchQueueMins} min.\n\n";
+      }
+
+      welcomeContent += "Ask me anything about queues, routes, accessibility, or transport and I’ll steer you to the best option.";
+
       state = state.copyWith(
         stadiumData: stadiumData,
         isLoading: false,
         messages: [
           MessageModel(
             id: MessageModel.generateId(),
-            content:
-                "Welcome to **${stadiumData.stadiumName}**$nameStr!\n\nI’m watching the live stadium feed right now. The fastest food is **${bestFood.key} Zone** at ${bestFood.value.foodQueueMins} min, the quickest gate is **${bestGate.key}** at ${bestGate.value.queueMins} min, and merch is fastest in **${bestMerch.key} Zone** at ${bestMerch.value.merchQueueMins} min.\n\nAsk me anything about queues, routes, accessibility, or transport and I’ll steer you to the best option.",
+            content: welcomeContent,
             role: MessageRole.assistant,
             timestamp: DateTime.now(),
             suggestions: const [

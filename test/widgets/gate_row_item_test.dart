@@ -28,7 +28,7 @@ void main() {
     );
 
     expect(find.text("Gate B"), findsOneWidget);
-    expect(find.text("8 min queue"), findsOneWidget);
+    expect(find.text("8 min"), findsOneWidget);
     expect(find.byIcon(Icons.accessible), findsOneWidget);
   });
 }

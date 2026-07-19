@@ -66,14 +66,18 @@ class ZoneCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      zone.displayName,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.getOnSurface(isDark),
+                    Expanded(
+                      child: Text(
+                        zone.displayName,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.getOnSurface(isDark),
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -105,11 +109,14 @@ class ZoneCard extends StatelessWidget {
                       color: AppColors.getOnSurfaceVariant(isDark),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      "Concessions: ",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.getOnSurfaceVariant(isDark),
+                    Expanded(
+                      child: Text(
+                        "Concessions: ",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.getOnSurfaceVariant(isDark),
+                        ),
                       ),
                     ),
                     Text(
@@ -133,11 +140,14 @@ class ZoneCard extends StatelessWidget {
                       color: AppColors.getOnSurfaceVariant(isDark),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      "Restroom: ",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.getOnSurfaceVariant(isDark),
+                    Expanded(
+                      child: Text(
+                        "Restroom: ",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.getOnSurfaceVariant(isDark),
+                        ),
                       ),
                     ),
                     Text(
@@ -161,11 +171,14 @@ class ZoneCard extends StatelessWidget {
                       color: AppColors.getOnSurfaceVariant(isDark),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      "Merch: ",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.getOnSurfaceVariant(isDark),
+                    Expanded(
+                      child: Text(
+                        "Merch: ",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.getOnSurfaceVariant(isDark),
+                        ),
                       ),
                     ),
                     Text(

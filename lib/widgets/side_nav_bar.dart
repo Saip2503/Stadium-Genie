@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 import '../providers/settings_provider.dart';
 import 'accessibility_wrapper.dart';
@@ -20,7 +20,7 @@ class SideNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = ref.watch(currentUserProvider);
     return Container(
       width: 288, // w-72 matching Stitch tokens
       padding: const EdgeInsets.all(16), // p-gutter
@@ -65,13 +65,16 @@ class SideNavBar extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  "StadiumGenie",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primaryContainer,
-                    letterSpacing: 0,
+                const Flexible(
+                  child: Text(
+                    "StadiumGenie",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryContainer,
+                      letterSpacing: 0,
+                    ),
                   ),
                 ),
               ],
@@ -266,14 +269,17 @@ class SideNavBar extends ConsumerWidget {
                     size: 22,
                   ),
                   const SizedBox(width: 16),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                      color: isActive
-                          ? Colors.white
-                          : AppColors.getOnSurface(isDark),
+                  Flexible(
+                    child: Text(
+                      label,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                        color: isActive
+                            ? Colors.white
+                            : AppColors.getOnSurface(isDark),
+                      ),
                     ),
                   ),
                 ],

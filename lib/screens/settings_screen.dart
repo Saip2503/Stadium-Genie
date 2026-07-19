@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
@@ -19,6 +19,8 @@ class SettingsScreen extends ConsumerWidget {
 
     final mediaQuery = MediaQuery.of(context);
     final isDesktop = mediaQuery.size.width >= 900;
+
+    final user = ref.watch(currentUserProvider);
 
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDark),
@@ -74,19 +76,16 @@ class SettingsScreen extends ConsumerWidget {
                             leading: CircleAvatar(
                               radius: 20,
                               backgroundImage:
-                                  FirebaseAuth.instance.currentUser?.photoURL !=
+                                  user?.photoURL !=
                                       null
                                   ? NetworkImage(
-                                      FirebaseAuth
-                                          .instance
-                                          .currentUser!
-                                          .photoURL!,
+                                      user!.photoURL!,
                                     )
                                   : null,
                               backgroundColor: AppColors.primaryContainer
                                   .withValues(alpha: 0.2),
                               child:
-                                  FirebaseAuth.instance.currentUser?.photoURL ==
+                                  user?.photoURL ==
                                       null
                                   ? const Icon(
                                       Icons.person,
@@ -95,14 +94,14 @@ class SettingsScreen extends ConsumerWidget {
                                   : null,
                             ),
                             title: Text(
-                              FirebaseAuth.instance.currentUser?.displayName ??
+                              user?.displayName ??
                                   "FIFA Fan",
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             subtitle: Text(
-                              FirebaseAuth.instance.currentUser?.email ??
+                              user?.email ??
                                   "Not signed in",
                               style: TextStyle(
                                 color: AppColors.getOnSurfaceVariant(isDark),

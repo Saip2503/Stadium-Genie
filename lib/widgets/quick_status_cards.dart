@@ -16,7 +16,9 @@ class QuickStatusCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data == null) return const SizedBox.shrink();
+    if (data == null || data!.zones.isEmpty || data!.gates.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     final bestFood = data!.zonesByFoodQueue.first;
     final bestMerch = data!.zonesByMerchQueue.first;
@@ -99,6 +101,8 @@ class QuickStatusCards extends StatelessWidget {
                               children: [
                                 Text(
                                   item.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
@@ -111,6 +115,8 @@ class QuickStatusCards extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   item.value,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w800,

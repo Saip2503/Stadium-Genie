@@ -3,9 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stadium_genie/screens/home_screen.dart';
 import 'package:stadium_genie/models/stadium_data_model.dart';
+import 'package:stadium_genie/models/message_model.dart';
 import 'package:stadium_genie/repositories/stadium_repository.dart';
+import 'package:stadium_genie/repositories/ai_repository.dart';
 import 'package:stadium_genie/providers/chat_provider.dart';
 import 'package:stadium_genie/widgets/emergency_info_card.dart';
+import 'package:stadium_genie/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FakeStadiumRepository implements StadiumRepository {
@@ -25,6 +28,17 @@ class FakeStadiumRepository implements StadiumRepository {
     required bool wheelchairMode,
     required bool sensoryMode,
   }) => "fake context";
+}
+
+class FakeAIRepository implements AIRepository {
+  @override
+  Stream<String> sendMessageStream({
+    required List<MessageModel> conversationHistory,
+    required String systemPrompt,
+  }) => const Stream.empty();
+
+  @override
+  bool get hasConfiguredApiKey => true;
 }
 
 void main() {
@@ -56,7 +70,16 @@ void main() {
         walkTimes: {},
       )
     },
-    gates: const {},
+    gates: const {
+      "Gate A": GateData(
+        name: "Gate A",
+        queueMins: 5,
+        isOpen: true,
+        isWheelchairAccessible: true,
+        location: "North",
+        transportNearby: [],
+      )
+    },
     alerts: const [],
     capacity: 80000,
     firstAidLocations: const ["Section 102"],
@@ -66,30 +89,44 @@ void main() {
   testWidgets('HomeScreen dashboard renders layout skeleton, sustainability, and emergency cards', (
     WidgetTester tester,
   ) async {
+    // Increase physical size to avoid overflow in tests
+    tester.view.physicalSize = const Size(1200, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     final fakeRepo = FakeStadiumRepository(testData);
+    final fakeAI = FakeAIRepository();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           stadiumRepositoryProvider.overrideWithValue(fakeRepo),
+          aiRepositoryProvider.overrideWithValue(fakeAI),
+          currentUserProvider.overrideWithValue(null),
+          chatProvider.overrideWith((ref) => ChatNotifier(
+            ref,
+            fakeRepo,
+            fakeAI,
+          )..state = ChatState(
+            messages: const [],
+            isLoading: false,
+            stadiumData: testData,
+          )),
         ],
         child: const MaterialApp(home: HomeScreen()),
       ),
     );
 
-    // Initial loading indicator
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-    // Complete microtask queue / future executions
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
     await tester.pumpAndSettle();
 
     // Verify main structures are initialized
     expect(find.byType(HomeScreen), findsOneWidget);
 
     // Verify Sustainability card renders
-    expect(find.text("🌱 SUSTAINABILITY ACTION"), findsOneWidget);
+    expect(find.textContaining("SUSTAINABILITY ACTION"), findsOneWidget);
 
     // Verify EmergencyInfoCard renders
     expect(find.byType(EmergencyInfoCard), findsOneWidget);

@@ -41,9 +41,9 @@ void main() {
     );
 
     expect(find.text("North Stand"), findsOneWidget);
-    expect(find.text("5 min"), findsOneWidget); // Food queue time text
-    expect(find.text("12 min"), findsOneWidget); // Restroom queue time text
-    expect(find.text("15 min"), findsOneWidget); // Merch queue time text
+    expect(find.text("5 mins"), findsOneWidget); // Food queue time text
+    expect(find.text("12 mins"), findsOneWidget); // Restroom queue time text
+    expect(find.text("15 mins"), findsOneWidget); // Merch queue time text
 
     await tester.tap(find.byType(InkWell));
     expect(tapped, isTrue);

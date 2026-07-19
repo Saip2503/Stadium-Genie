@@ -3,17 +3,18 @@ import 'package:stadium_genie/repositories/stadium_repository.dart';
 import 'package:stadium_genie/services/mock_data_service.dart';
 import 'package:stadium_genie/models/stadium_data_model.dart';
 import 'package:flutter/services.dart';
+import 'dart:convert';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   // Set up mock rootBundle asset loader for JSON status
-  const mockJson = '''
-  {
-    "stadium_name": "MetLife Stadium",
+  const mockJsonMap = {
+    "stadium": "MetLife Stadium",
     "event": "FIFA World Cup 2026",
     "match": "USA vs Italy",
     "kickoff": "2026-07-19T20:00:00Z",
+    "last_updated": "2024-07-19T18:00:00Z",
     "capacity": 82500,
     "zones": {
       "North": {
@@ -57,8 +58,7 @@ void main() {
         }
       }
     }
-  }
-  ''';
+  };
 
   group('StadiumRepository Tests', () {
     late StadiumRepository repository;
@@ -68,11 +68,14 @@ void main() {
       service = MockDataService();
       repository = StadiumRepositoryImpl(service);
 
-      // Program the asset channel to return our mock JSON
-      const MethodChannel('flutter/assets')
-          .setMockMethodCallHandler((MethodCall methodCall) async {
-        if (methodCall.method == 'decodeImage') return null;
-        return mockJson;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMessageHandler('flutter/assets', (message) async {
+        final Uint8List encoded = message!.buffer.asUint8List(message.offsetInBytes, message.lengthInBytes);
+        final String assetName = utf8.decode(encoded);
+        if (assetName == 'assets/data/stadium_status.json') {
+          return ByteData.view(Uint8List.fromList(utf8.encode(jsonEncode(mockJsonMap))).buffer);
+        }
+        return null;
       });
     });
 
@@ -107,7 +110,7 @@ void main() {
 
       expect(ctx, contains("=== REAL-TIME STADIUM STATUS ==="));
       expect(ctx, contains("North Zone:"));
-      expect(ctx, contains("Crowd: medium"));
+      expect(ctx, contains("Crowd: Moderate"));
     });
   });
 }
